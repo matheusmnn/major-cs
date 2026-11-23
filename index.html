@@ -205,9 +205,9 @@ function applyData() {
 }
 
 // Casa o stats.json (por nome) em STATS, se houver.
-function applyStats() {
-  if (!STATS_RAW || !STATS_RAW.teams) return;
-  for (const [name, s] of Object.entries(STATS_RAW.teams)) STATS.set(norm(name), s);
+function applyStats(raw) {
+  if (!raw || !raw.teams) return;
+  for (const [name, s] of Object.entries(raw.teams)) STATS.set(norm(name), s);
 }
 
 // Knob de zebra 0..100 -> escala interna. 0 = favorito domina; 100 = quase moeda.
@@ -409,10 +409,11 @@ $('ovAdd').addEventListener('click', () => {
 
 $('upsetVal').textContent = $('upset').value;
 applyData();
-applyStats();
 renderTeams();
 renderLive();
-run();
+// Injetado (dist/file://) usa direto; servido (Pages/http) busca o stats.json.
+if (STATS_RAW) { applyStats(STATS_RAW); run(); }
+else { fetch('stats.json').then((r) => (r.ok ? r.json() : null)).then(applyStats).catch(() => {}).finally(run); }
 </script>
 </body>
 </html>
