@@ -382,7 +382,6 @@ function confirmRound() {
   }
   roundPicks = {};
   renderLive();
-  run();
 }
 
 function renderOverrides() {
@@ -390,30 +389,29 @@ function renderOverrides() {
     `<div class="row"><span>${nameOf(o.a)} bate ${nameOf(o.b)} = ${o.p}</span>
      <button class="ghost" data-i="${i}" style="padding:1px 7px">×</button></div>`).join('');
   $('ovList').querySelectorAll('button').forEach((b) =>
-    b.addEventListener('click', () => { overrides.splice(+b.dataset.i, 1); renderOverrides(); run(); }));
+    b.addEventListener('click', () => { overrides.splice(+b.dataset.i, 1); renderOverrides(); }));
 }
 
 $('run').addEventListener('click', run);
 $('upset').addEventListener('input', () => $('upsetVal').textContent = $('upset').value);
-$('upset').addEventListener('change', run);
-$('ctx').addEventListener('change', run);
 $('confirmRound').addEventListener('click', confirmRound);
-$('resetResults').addEventListener('click', () => { lockedMatches = []; roundPicks = {}; renderLive(); run(); });
+$('resetResults').addEventListener('click', () => { lockedMatches = []; roundPicks = {}; renderLive(); });
 $('ovAdd').addEventListener('click', () => {
   const a = +$('ovA').value, b = +$('ovB').value;
   if (a === b) return;
   overrides = overrides.filter((o) => E.pairKey(o.a, o.b) !== E.pairKey(a, b));
   overrides.push({ a, b, p: Math.max(0, Math.min(1, +$('ovP').value)) });
-  renderOverrides(); run();
+  renderOverrides();
 });
 
 $('upsetVal').textContent = $('upset').value;
 applyData();
 renderTeams();
 renderLive();
+// Carrega o contexto em segundo plano (não roda; a simulação só roda no botão Rodar).
 // Injetado (dist/file://) usa direto; servido (Pages/http) busca o stats.json.
-if (STATS_RAW) { applyStats(STATS_RAW); run(); }
-else { fetch('stats.json').then((r) => (r.ok ? r.json() : null)).then(applyStats).catch(() => {}).finally(run); }
+if (STATS_RAW) applyStats(STATS_RAW);
+else fetch('stats.json').then((r) => (r.ok ? r.json() : null)).then(applyStats).catch(() => {});
 </script>
 </body>
 </html>
