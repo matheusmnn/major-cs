@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup, simulateStage, pairKey } = require('../engine.js');
+const { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup, simulateStage, pairKey, mulberry32, runMonteCarlo } = require('../engine.js');
 
 const teams16 = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, seed: i + 1, strength: 1600 - i * 40 }));
 
@@ -100,4 +100,34 @@ test('simulateStage: todo time termina em 3 vitórias ou 3 derrotas', () => {
   for (const s of r.standings.values()) {
     assert.ok(s.wins === 3 || s.losses === 3, `record inesperado ${s.wins}-${s.losses}`);
   }
+});
+
+// --- Task 4: Monte Carlo ---
+
+const idx = (id) => teams16.findIndex((t) => t.id === id);
+
+test('runMonteCarlo: mesma seed => resultado idêntico', () => {
+  const a = runMonteCarlo(teams16, { N: 2000, upset: 400, locked: new Map(), seed: 1 });
+  const b = runMonteCarlo(teams16, { N: 2000, upset: 400, locked: new Map(), seed: 1 });
+  assert.deepEqual(a.meetProb, b.meetProb);
+});
+
+test('runMonteCarlo: meetProb simétrica e diagonal zero', () => {
+  const r = runMonteCarlo(teams16, { N: 1000, upset: 400, locked: new Map(), seed: 3 });
+  for (let i = 0; i < 16; i++) {
+    assert.equal(r.meetProb[i][i], 0);
+    for (let j = 0; j < 16; j++) assert.equal(r.meetProb[i][j], r.meetProb[j][i]);
+  }
+});
+
+test('runMonteCarlo: R1 fixa por seed => P(1 enfrenta 9) == 1', () => {
+  const r = runMonteCarlo(teams16, { N: 1000, upset: 400, locked: new Map(), seed: 7 });
+  assert.equal(r.meetProb[idx(1)][idx(9)], 1);
+});
+
+test('runMonteCarlo: probabilidades em [0,1] e advanceProb soma ~8', () => {
+  const r = runMonteCarlo(teams16, { N: 2000, upset: 400, locked: new Map(), seed: 5 });
+  for (const p of r.advanceProb.values()) assert.ok(p >= 0 && p <= 1);
+  const sum = [...r.advanceProb.values()].reduce((a, b) => a + b, 0);
+  assert.ok(Math.abs(sum - 8) < 1e-9, `soma avançar = ${sum}`);
 });
