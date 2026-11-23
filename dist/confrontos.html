@@ -3,167 +3,248 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Confrontos — Major CS2 (fase suíça)</title>
+<title>Confrontos.sim — Major CS2 (fase suíça)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0d12; --panel: #12171f; --panel2: #0c1016; --line: #222c39;
-    --fg: #e9eff6; --muted: #7f8c9d; --gold: #ecb844; --gold-ink: #1b1405;
-    --win: #3ec47d; --lose: #e05d60;
+    --bg: #06090c; --line: #11181f; --panel2: #0a1014; --line2: #0d1318;
+    --fg: #d8e4ea; --dim: #8a9aa4; --faint: #4a5862; --cy: #4de3ff; --ink: #06090c; --lose: #e05d60;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg);
-    font: 14px/1.5 Inter, system-ui, sans-serif; padding: 20px 16px 40px; }
-  .wrap { max-width: 1180px; margin: 0 auto; }
-  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
-    padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
-  h1 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 22px;
-    letter-spacing: .01em; margin: 0; }
-  h1 b { color: var(--gold); font-weight: 700; }
-  .sub { color: var(--muted); margin: 0; font-size: 13px; max-width: 62ch; }
-  .grid { display: grid; grid-template-columns: 330px 1fr; gap: 16px; align-items: start; }
-  @media (max-width: 880px) { .grid { grid-template-columns: 1fr; } }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
-  .panel + .panel, .grid > div > .panel + .panel { margin-top: 14px; }
-  .panel h2 { font-family: 'Chakra Petch', sans-serif; font-size: 13px; font-weight: 600;
-    letter-spacing: .02em; color: var(--fg); margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
-  .panel h2::before { content: ''; width: 3px; height: 13px; background: var(--gold); border-radius: 2px; }
-  table { border-collapse: collapse; width: 100%; }
-  .teams td { padding: 3px 4px; }
-  input, select { background: var(--panel2); border: 1px solid var(--line); color: var(--fg);
-    border-radius: 7px; padding: 6px 8px; font: inherit; }
-  input:focus, select:focus { outline: 2px solid var(--gold); outline-offset: -1px; border-color: var(--gold); }
-  .teams input.name { width: 100%; } .teams input.num { width: 70px; text-align: right; font-variant-numeric: tabular-nums; }
-  .seedcol { color: var(--muted); text-align: right; width: 24px; font-family: 'Chakra Petch', sans-serif;
-    font-variant-numeric: tabular-nums; }
-  .controls label { display: block; margin: 12px 0 4px; color: var(--muted); font-size: 12px; }
-  .controls input[type=number] { width: 130px; }
-  input[type=range] { width: 100%; accent-color: var(--gold); padding: 0; }
-  button { background: var(--gold); color: var(--gold-ink); border: 0; border-radius: 8px;
-    padding: 9px 18px; font: inherit; font-weight: 600; cursor: pointer; transition: filter .12s; }
-  button:hover:not(:disabled) { filter: brightness(1.08); }
-  button.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); font-weight: 500; padding: 7px 12px; }
-  button.ghost:hover:not(:disabled) { border-color: var(--gold); filter: none; }
-  button:disabled { opacity: .5; cursor: default; }
-  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  /* heatmap */
-  .heat { border-collapse: separate; border-spacing: 2px; font-size: 11px; font-variant-numeric: tabular-nums; }
-  .heat th { color: var(--muted); font-weight: 500; padding: 1px; }
-  .heat th.rot { height: 60px; white-space: nowrap; vertical-align: bottom; }
-  .heat th.rot div { transform: rotate(-90deg); width: 18px; font-family: 'Chakra Petch', sans-serif; }
-  .heat td { width: 26px; height: 24px; text-align: center; border-radius: 4px; cursor: default; color: var(--gold-ink); }
-  .heat td.diag { background: #0c1016; }
-  .heat td.zero { background: #0e1219; }
-  .heat .rowlab { color: var(--fg); text-align: right; padding-right: 8px; white-space: nowrap; cursor: pointer; font-weight: 400; }
-  .heat .rowlab:hover { color: var(--gold); }
-  .heat .rowlab s { color: var(--muted); text-decoration: none; font-family: 'Chakra Petch', sans-serif; }
-  .legend { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12px; color: var(--muted); }
-  .legend .bar { height: 10px; width: 160px; border-radius: 5px;
-    background: linear-gradient(90deg, hsl(44 36% 17%), hsl(44 85% 60%)); }
-  .pill { display: inline-block; padding: 2px 9px; border-radius: 20px; background: var(--panel2);
-    border: 1px solid var(--line); color: var(--muted); font-size: 12px; font-weight: 500; }
-  .tier { display: inline-block; padding: 1px 6px; border-radius: 5px; background: var(--panel2);
-    border: 1px solid var(--line); color: var(--gold); font-size: 11px; font-weight: 600;
-    font-family: 'Chakra Petch', sans-serif; margin-right: 3px; }
-  .ctxrow { display: flex; align-items: center; gap: 8px; margin-top: 14px; color: var(--muted); font-size: 12px; }
-  .ctxrow input { width: auto; }
+    font: 14px/1.5 'Space Grotesk', system-ui, sans-serif; padding: 24px 28px 48px; }
+  .wrap { max-width: 1320px; margin: 0 auto; }
+  .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+  .muted { color: var(--dim); }
+  @keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  img { display: block; }
+
+  /* app header */
+  .apphead { display: flex; align-items: center; justify-content: space-between; gap: 40px;
+    padding-bottom: 18px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+  .brand { display: flex; align-items: center; gap: 16px; }
+  .logo { width: 36px; height: 36px; border: 1px solid var(--cy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo i { width: 8px; height: 8px; background: var(--cy); animation: pulseDot 1.6s infinite ease-in-out; }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .24em; color: var(--cy); }
+  .brand h1 { margin: 4px 0 0; font-size: 22px; font-weight: 600; letter-spacing: -.01em; }
+  .brand h1 b { color: var(--cy); font-weight: 600; }
+  .readout { display: flex; gap: 22px; font-family: 'JetBrains Mono', monospace; font-size: 11px; text-align: right; }
+  .readout .k { color: var(--faint); }
+  .readout .v { color: var(--fg); font-size: 13px; font-weight: 600; }
+  .readout .v.cy { color: var(--cy); }
+
+  /* layout */
+  .grid { display: grid; grid-template-columns: 320px 1fr; gap: 22px; align-items: start; }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+  aside, main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+  /* panel */
+  .panel { border: 1px solid var(--line); }
+  .phead { display: flex; align-items: center; gap: 8px; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+  .phead .tick { width: 3px; height: 12px; background: var(--cy); flex-shrink: 0; }
+  .phead .lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .2em; color: var(--fg); }
+  .phead .ct { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--faint); }
+  .pbody { padding: 10px 12px; }
+
+  /* team list */
+  #teamRows { display: flex; flex-direction: column; }
+  .trow { display: grid; grid-template-columns: 20px 1fr 62px; gap: 8px; align-items: center;
+    padding: 5px 0; border-bottom: 1px solid var(--line2); }
+  .trow:last-child { border-bottom: 0; }
+  .tseed { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--faint); text-align: right; }
+  .tname { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .ic { flex-shrink: 0; object-fit: contain; border-radius: 2px; }
+  .tname .nm { font-size: 12px; color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nminput { background: transparent; border: 0; border-bottom: 1px solid transparent; color: var(--fg);
+    font-family: 'Space Grotesk', sans-serif; font-size: 12px; width: 100%; padding: 2px 0; }
+  .nminput:focus { outline: none; border-bottom: 1px solid var(--cy); }
+  .num { background: var(--panel2); border: 1px solid var(--line); color: var(--fg);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; text-align: right; padding: 4px 7px; width: 100%; }
+  .num:focus { outline: none; border-color: var(--cy); }
+
+  /* parâmetros */
+  .field { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--faint); letter-spacing: .08em; margin: 0 0 6px; }
+  .field b { color: var(--cy); font-weight: 600; }
+  .ninput { background: var(--panel2); border: 1px solid var(--line); color: var(--fg);
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 7px 10px; width: 100%; margin-bottom: 16px; }
+  .ninput:focus { outline: none; border-color: var(--cy); }
+  input[type=range] { width: 100%; accent-color: var(--cy); margin: 0 0 16px; padding: 0; }
+  .chk { display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--dim); letter-spacing: .06em; margin-bottom: 16px; cursor: pointer; }
+  .chk input { accent-color: var(--cy); width: 14px; height: 14px; }
+  .btn { background: var(--cy); color: var(--ink); border: 0; padding: 9px 18px; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700; letter-spacing: .12em; cursor: pointer; }
+  .btn:hover:not(:disabled) { filter: brightness(1.08); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.ghost { background: transparent; border: 1px solid var(--cy); color: var(--cy); font-weight: 600; }
+  .btn.ghost.dim { border-color: var(--line); color: var(--dim); }
+  .btn.ghost:hover:not(:disabled) { filter: none; background: rgba(77,227,255,.06); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
   /* live */
-  .match { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
-  .match .vs { color: var(--muted); font-size: 12px; }
-  .pick { padding: 5px 10px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel2);
-    color: var(--fg); cursor: pointer; font: inherit; flex: 1; transition: border-color .12s; }
-  .pick:hover { border-color: var(--gold); }
-  .pick.sel { background: var(--win); color: #042111; border-color: var(--win); font-weight: 600; }
-  .bo3 { color: var(--gold); font-size: 10px; font-weight: 600; font-family: 'Chakra Petch', sans-serif; }
-  .adv { color: var(--win); } .elim { color: var(--lose); }
+  .match { display: grid; grid-template-columns: 1fr 24px 1fr; gap: 4px; align-items: stretch; margin-bottom: 4px; }
+  .pick { display: flex; align-items: center; gap: 6px; background: var(--panel2); border: 1px solid var(--line);
+    color: var(--fg); padding: 6px 8px; font: inherit; font-size: 11px; cursor: pointer; text-align: left; min-width: 0; }
+  .pick:hover { border-color: var(--cy); }
+  .pick.sel { background: rgba(77,227,255,.14); border-color: var(--cy); color: var(--cy); font-weight: 600; }
+  .pick span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vs { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--faint);
+    display: flex; align-items: center; justify-content: center; }
+  .vs.bo3 { color: var(--cy); font-size: 8px; font-weight: 700; }
+  #lockedList { color: var(--faint); font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-top: 10px; }
+
+  /* overrides */
+  details summary { list-style: none; cursor: pointer; }
+  details summary::-webkit-details-marker { display: none; }
+  .ovhead { display: flex; align-items: center; gap: 8px; padding: 11px 14px; }
+  .ovhead .ar { color: var(--faint); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+  .ovhead .lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .2em; color: var(--dim); }
+  select { background: var(--panel2); border: 1px solid var(--line); color: var(--fg); padding: 6px 8px; font: inherit; font-size: 12px; }
+  select:focus, .opnum:focus { outline: none; border-color: var(--cy); }
+  .opnum { background: var(--panel2); border: 1px solid var(--line); color: var(--fg); padding: 6px 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; width: 70px; }
+  #ovList { margin-top: 10px; font-size: 12px; }
+
+  /* heatmap grid */
+  .heatgrid { display: grid; gap: 1px; background: var(--line); padding: 1px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+  .hcorner { background: var(--bg); }
+  .hcol { background: var(--bg); height: 32px; display: flex; align-items: center; justify-content: center;
+    color: var(--faint); font-size: 9px; }
+  .hrow { background: var(--bg); display: flex; align-items: center; gap: 7px; padding: 0 8px 0 6px; cursor: pointer; min-width: 0; }
+  .hrow:hover .hnm { color: var(--cy); }
+  .hrow .hseed { color: var(--faint); font-size: 9px; width: 12px; text-align: right; flex-shrink: 0; }
+  .hrow .hnm { font-family: 'Space Grotesk', sans-serif; font-size: 11px; color: var(--fg);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
+  .hcell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: 500; min-width: 0; }
+  .hcell.diag { background: var(--panel2); }
+  .hcell.zero { background: #070b0e; }
+  .legend { display: flex; align-items: center; gap: 10px; margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--faint); letter-spacing: .06em; }
+  .legend .bar { width: 120px; height: 6px; background: linear-gradient(90deg, hsl(188 20% 10%), hsl(188 70% 50%)); }
+
   /* ranking */
-  .rank { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .rank th { text-align: right; padding: 6px 8px; color: var(--muted); font-weight: 500; font-size: 12px;
-    border-bottom: 1px solid var(--line); }
-  .rank th.l { text-align: left; }
-  .rank th.sortable { cursor: pointer; user-select: none; }
-  .rank th.sortable:hover { color: var(--fg); }
-  .rank th.active { color: var(--gold); }
-  .rank td { text-align: right; padding: 6px 8px; border-bottom: 1px solid #151b24; font-variant-numeric: tabular-nums; }
-  .rank tr:last-child td { border-bottom: 0; }
-  .rank td.l { text-align: left; color: var(--fg); }
-  .rank td.l s { color: var(--muted); text-decoration: none; font-family: 'Chakra Petch', sans-serif; margin-right: 6px; }
-  .rank td.bar { background: linear-gradient(90deg, var(--bc) var(--v,0%), transparent 0); }
-  .bar-adv { --bc: rgba(62,196,125,.18); } .bar-z30 { --bc: rgba(236,184,68,.2); } .bar-z03 { --bc: rgba(224,93,96,.18); }
-  .teamstats td { padding: 3px 6px; border-bottom: 1px solid var(--line); }
-  .dlabel { color: var(--muted); font-size: 12px; margin: 14px 0 6px; font-family: 'Chakra Petch', sans-serif; letter-spacing: .02em; }
-  .muted { color: var(--muted); } .mono { font-variant-numeric: tabular-nums; }
-  details { margin-top: 14px; } summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  .rkhead, .rkrow { display: grid; grid-template-columns: 1fr 1.6fr 92px 92px; gap: 10px; align-items: center; }
+  .rkhead { padding: 8px 4px; border-bottom: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .14em; color: var(--faint); }
+  .rkhead .rkh { cursor: pointer; text-align: right; user-select: none; }
+  .rkhead .rkh:hover { color: var(--fg); }
+  .rkhead .rkh.act { color: var(--cy); }
+  .rkrow { padding: 6px 4px; border-bottom: 1px solid var(--line2); font-size: 12px; }
+  .rkrow:last-child { border-bottom: 0; }
+  .rkteam { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .rkteam .nm { color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rkbar { position: relative; height: 18px; background: var(--panel2); }
+  .rkbar .fill { position: absolute; left: 0; top: 0; bottom: 0; }
+  .rkbar span { position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  .rkbar.adv .fill { background: rgba(77,227,255,.22); } .rkbar.adv span { color: var(--fg); }
+  .rkbar.z30 .fill { background: rgba(166,199,210,.10); } .rkbar.z30 span { color: var(--dim); }
+  .rkbar.z03 .fill { background: rgba(224,93,96,.18); } .rkbar.z03 span { color: var(--lose); }
+
+  /* detail */
+  #detail.empty { color: var(--faint); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  .dhead { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .dhead .dname { font-size: 16px; font-weight: 600; color: var(--fg); }
+  .dhead .dpills { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill { display: inline-block; padding: 3px 9px; border: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--dim); }
+  .pill.adv { color: var(--cy); } .pill.elim { color: var(--lose); }
+  .tier { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 16px; padding: 0 4px;
+    border: 1px solid var(--line); color: var(--cy); font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600; margin-right: 3px; }
+  .dlabel { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .14em; color: var(--faint); margin: 16px 0 8px; }
+  .dlabel span { letter-spacing: 0; }
+  .drow { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
+    padding: 5px 2px; border-bottom: 1px solid var(--line2); font-size: 12px; }
+  .drow .r { font-family: 'JetBrains Mono', monospace; text-align: right; white-space: nowrap; }
+  .oprow { display: grid; grid-template-columns: 1fr 1fr 50px; gap: 12px; align-items: center;
+    padding: 5px 2px; border-bottom: 1px solid var(--line2); font-size: 12px; }
+  .opbar { position: relative; height: 12px; background: var(--panel2); }
+  .opbar .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--cy); opacity: .55; }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <h1>Major CS2 — <b>Confrontos</b></h1>
-      <p class="sub">Simula a fase suíça e mostra a chance de cada time enfrentar cada outro. A seed define a estrutura; a força define quem ganha.</p>
+    <header class="apphead">
+      <div class="brand">
+        <div class="logo"><i></i></div>
+        <div>
+          <div class="eyebrow">// MAJOR_CS2 / SWISS_STAGE</div>
+          <h1>Confrontos<b>.sim</b></h1>
+        </div>
+      </div>
+      <div class="readout">
+        <div><div class="k">ZEBRA</div><div class="v cy"><span id="upsetVal"></span>/100</div></div>
+        <div><div class="k">STATUS</div><div class="v" id="status">—</div></div>
+      </div>
     </header>
 
     <div class="grid">
-      <div>
+      <aside>
         <div class="panel">
-          <h2>Times e força</h2>
-          <table class="teams"><tbody id="teamRows"></tbody></table>
+          <div class="phead"><div class="tick"></div><div class="lbl">// TIMES &amp; FORÇA</div><div class="ct">16</div></div>
+          <div class="pbody"><div id="teamRows"></div></div>
         </div>
 
-        <div class="panel controls">
-          <h2>Parâmetros</h2>
-          <label>Simulações — mais = mais preciso e mais lento</label>
-          <input id="N" type="number" value="50000" min="1000" step="1000">
-          <label>Zebra: <span id="upsetVal" class="mono"></span>/100 — 0 favorito domina, 100 quase moeda</label>
-          <input id="upset" type="range" min="0" max="100" step="1" value="50">
-          <label class="ctxrow"><input id="ctx" type="checkbox"> Considerar contexto (calendário + eventos)</label>
-          <div class="row" style="margin-top:16px">
-            <button id="run">Rodar</button>
-            <span id="status" class="muted"></span>
+        <div class="panel">
+          <div class="phead"><div class="tick"></div><div class="lbl">// PARÂMETROS</div></div>
+          <div class="pbody">
+            <div class="field">SIMULAÇÕES — mais = mais preciso e mais lento</div>
+            <input id="N" class="ninput" type="number" value="50000" min="1000" step="1000">
+            <div class="field">ZEBRA · <b id="upsetVal2"></b>/100 — 0 favorito domina, 100 quase moeda</div>
+            <input id="upset" type="range" min="0" max="100" step="1" value="50">
+            <label class="chk"><input id="ctx" type="checkbox"> CONSIDERAR CONTEXTO (CAL + EVENTOS)</label>
+            <button id="run" class="btn">► RODAR</button>
           </div>
         </div>
 
         <div class="panel">
-          <h2>Resultados ao vivo</h2>
-          <div id="live"></div>
-          <div class="row" style="margin-top:12px">
-            <button id="confirmRound" class="ghost">Confirmar rodada</button>
-            <button id="resetResults" class="ghost">Zerar</button>
+          <div class="phead"><div class="tick"></div><div class="lbl">// RESULTADOS AO VIVO</div></div>
+          <div class="pbody">
+            <div id="live"></div>
+            <div class="row" style="margin-top:12px">
+              <button id="confirmRound" class="btn ghost" style="flex:1">CONFIRMAR RODADA</button>
+              <button id="resetResults" class="btn ghost dim">ZERAR</button>
+            </div>
+            <div id="lockedList"></div>
           </div>
-          <div id="lockedList" class="muted" style="margin-top:10px;font-size:12px"></div>
         </div>
 
         <details class="panel">
-          <summary>Ajustar um confronto na mão</summary>
-          <div style="margin-top:12px">
+          <summary><div class="ovhead"><div class="ar">▸</div><div class="lbl">// AJUSTAR UM CONFRONTO NA MÃO</div></div></summary>
+          <div class="pbody" style="padding-top:0">
             <div class="row">
-              <select id="ovA"></select><span class="vs">bate</span><select id="ovB"></select>
-              <input id="ovP" type="number" min="0" max="1" step="0.01" value="0.5" style="width:76px">
-              <button id="ovAdd" class="ghost">+</button>
+              <select id="ovA"></select><span class="vs">×</span><select id="ovB"></select>
+              <input id="ovP" class="opnum" type="number" min="0" max="1" step="0.01" value="0.5">
+              <button id="ovAdd" class="btn ghost dim">+</button>
             </div>
-            <div id="ovList" style="margin-top:10px;font-size:12px"></div>
+            <div id="ovList"></div>
           </div>
         </details>
-      </div>
+      </aside>
 
-      <div>
+      <main>
         <div class="panel">
-          <h2>Quem enfrenta quem</h2>
-          <div style="overflow:auto"><div id="heat"></div></div>
-          <div class="legend"><span>improvável</span><span class="bar"></span><span>certo</span>
-            <span style="margin-left:auto">vazio = nunca se cruzam · clique numa linha p/ detalhe</span></div>
+          <div class="phead"><div class="tick"></div><div class="lbl">// QUEM ENFRENTA QUEM — P(A × B) %</div>
+            <div class="ct" style="display:flex;align-items:center;gap:8px;letter-spacing:.06em">IMPROVÁVEL <span class="bar" style="display:inline-block"></span> CERTO</div></div>
+          <div class="pbody">
+            <div style="overflow:auto"><div id="heat"></div></div>
+            <div class="legend"><span style="margin-left:auto">vazio = nunca se cruzam · clique numa linha p/ detalhe</span></div>
+          </div>
         </div>
+
         <div class="panel">
-          <h2>Ranking <span class="muted" style="font-weight:400;font-size:12px;letter-spacing:0">clique numa coluna p/ ordenar</span></h2>
-          <table class="rank" id="rankTable"></table>
+          <div class="phead"><div class="tick"></div><div class="lbl">// RANKING</div><div class="ct">clique numa coluna p/ ordenar</div></div>
+          <div class="pbody"><div id="rankTable"></div></div>
         </div>
+
         <div class="panel">
-          <h2 id="detailTitle">Detalhe do time</h2>
-          <div id="detail" class="muted">Rode e clique num time na matriz.</div>
+          <div class="phead"><div class="tick"></div><div class="lbl">// DETALHE DO TIME</div></div>
+          <div class="pbody"><div id="detail" class="empty">Rode e clique num time na matriz.</div></div>
         </div>
-      </div>
+      </main>
     </div>
   </div>
 
@@ -422,6 +503,16 @@ const nameOf = (id) => teams.find((t) => t.id === id).name;
 const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 const idByName = (n) => { const t = teams.find((x) => norm(x.name) === norm(n)); return t ? t.id : null; };
 
+// norm(nome) -> slug da pasta em assets/stats/<slug>/icon.png
+const SLUG = {
+  ninjasinpyjamas: 'nip', parivision: 'parivision', heroic: 'heroic', faze: 'faze',
+  teamliquid: 'liquid', eternalfire: 'eternal_fire', '100thieves': '100t', '9z': '9z',
+  m80: 'm80', dendele: 'dendele', imperial: 'imperial', wildcard: 'wildcard',
+  bcgame: 'bc_game', flyquest: 'flyquest', cw: 'chg_warriors', lvg: 'lynn',
+};
+const iconOf = (name) => { const s = SLUG[norm(name)]; return s ? `assets/stats/${s}/icon.png` : ''; };
+const icon = (name, size) => { const u = iconOf(name); return u ? `<img class="ic" src="${u}" alt="" width="${size}" height="${size}">` : ''; };
+
 // Aplica forças do data.json (por nome), se houver.
 function applyData() {
   if (!DATA) return;
@@ -454,11 +545,11 @@ function h2hMap() {
 
 function renderTeams() {
   $('teamRows').innerHTML = teams.map((t, i) => `
-    <tr>
-      <td class="seedcol">${t.seed}</td>
-      <td><input class="name" data-i="${i}" data-f="name" value="${t.name}"></td>
-      <td><input class="num" data-i="${i}" data-f="strength" type="number" value="${t.strength}"></td>
-    </tr>`).join('');
+    <div class="trow">
+      <div class="tseed">${t.seed}</div>
+      <div class="tname">${icon(t.name, 18)}<input class="nminput" data-i="${i}" data-f="name" value="${t.name}"></div>
+      <input class="num" data-i="${i}" data-f="strength" type="number" value="${t.strength}">
+    </div>`).join('');
   $('teamRows').querySelectorAll('input').forEach((inp) => {
     inp.addEventListener('change', (e) => {
       const i = +e.target.dataset.i, f = e.target.dataset.f;
@@ -503,28 +594,26 @@ function run() {
   }, 10);
 }
 
-const cellBg = (p) => `hsl(44 ${36 + p * 49}% ${17 + p * 43}%)`;
-const cellInk = (p) => (p > 0.42 ? 'var(--gold-ink)' : '#aeb9c6');
+const cellBg = (p) => `hsl(188 ${20 + p * 50}% ${10 + p * 40}%)`;
+const cellInk = (p) => (p > 0.45 ? 'var(--ink)' : '#9fb2bd');
 
 function renderHeat() {
   const n = teams.length, m = last.meetProb;
-  let html = '<table class="heat"><thead><tr><th></th>';
-  for (const t of teams) html += `<th class="rot"><div>${t.seed}</div></th>`;
-  html += '</tr></thead><tbody>';
+  let h = `<div class="heatgrid" style="grid-template-columns:128px repeat(${n},1fr)">`;
+  h += '<div class="hcorner"></div>';
+  for (const t of teams) h += `<div class="hcol">${t.seed}</div>`;
   for (let i = 0; i < n; i++) {
-    html += `<tr><th class="rowlab" data-i="${i}"><s>${teams[i].seed}</s> ${teams[i].name}</th>`;
+    h += `<div class="hrow" data-i="${i}">${icon(teams[i].name, 16)}<span class="hseed">${teams[i].seed}</span><span class="hnm">${teams[i].name}</span></div>`;
     for (let j = 0; j < n; j++) {
-      if (i === j) { html += '<td class="diag"></td>'; continue; }
+      if (i === j) { h += '<div class="hcell diag"></div>'; continue; }
       const p = m[i][j];
-      if (p <= 0) { html += '<td class="zero" title="não se enfrentam em nenhum cenário"></td>'; continue; }
-      const pct = Math.round(p * 100);
-      html += `<td style="background:${cellBg(p)};color:${cellInk(p)}" title="${teams[i].name} × ${teams[j].name}: ${(p * 100).toFixed(1)}%">${pct}</td>`;
+      if (p <= 0) { h += '<div class="hcell zero" title="não se enfrentam em nenhum cenário"></div>'; continue; }
+      h += `<div class="hcell" style="background:${cellBg(p)};color:${cellInk(p)}" title="${teams[i].name} × ${teams[j].name}: ${(p * 100).toFixed(1)}%">${Math.round(p * 100)}</div>`;
     }
-    html += '</tr>';
   }
-  html += '</tbody></table>';
-  $('heat').innerHTML = html;
-  $('heat').querySelectorAll('.rowlab').forEach((el) =>
+  h += '</div>';
+  $('heat').innerHTML = h;
+  $('heat').querySelectorAll('.hrow').forEach((el) =>
     el.addEventListener('click', () => renderDetail(+el.dataset.i)));
 }
 
@@ -534,14 +623,13 @@ function renderRanking() {
     t, adv: last.advanceProb.get(t.id), z30: last.threeZero.get(t.id), z03: last.zeroThree.get(t.id),
   })).sort((a, b) => b[col[sortKey]] - a[col[sortKey]]);
 
-  const th = (key, label) => `<th class="sortable ${sortKey === key ? 'active' : ''}" data-k="${key}">${label}</th>`;
-  const cell = (v, cls) => `<td class="bar ${cls}" style="--v:${(v * 100).toFixed(0)}%">${(v * 100).toFixed(1)}</td>`;
-  let html = `<thead><tr><th class="l">Time</th>${th('advance', 'avança')}${th('z30', '3-0')}${th('z03', '0-3')}</tr></thead><tbody>`;
-  html += rows.map((r) =>
-    `<tr><td class="l"><s>${r.t.seed}</s>${r.t.name}</td>${cell(r.adv, 'bar-adv')}${cell(r.z30, 'bar-z30')}${cell(r.z03, 'bar-z03')}</tr>`).join('');
-  html += '</tbody>';
-  $('rankTable').innerHTML = html;
-  $('rankTable').querySelectorAll('.sortable').forEach((el) =>
+  const th = (k, l) => `<div class="rkh ${sortKey === k ? 'act' : ''}" data-k="${k}">${l}${sortKey === k ? ' ▾' : ''}</div>`;
+  const bar = (v, cls) => `<div class="rkbar ${cls}"><div class="fill" style="width:${(v * 100).toFixed(0)}%"></div><span>${(v * 100).toFixed(1)}</span></div>`;
+  let h = `<div class="rkhead"><div>TIME</div>${th('advance', 'AVANÇA')}${th('z30', '3–0')}${th('z03', '0–3')}</div>`;
+  h += rows.map((r) =>
+    `<div class="rkrow"><div class="rkteam"><span class="tseed">${r.t.seed}</span>${icon(r.t.name, 18)}<span class="nm">${r.t.name}</span></div>${bar(r.adv, 'adv')}${bar(r.z30, 'z30')}${bar(r.z03, 'z03')}</div>`).join('');
+  $('rankTable').innerHTML = h;
+  $('rankTable').querySelectorAll('.rkh').forEach((el) =>
     el.addEventListener('click', () => { sortKey = el.dataset.k; renderRanking(); }));
 }
 
@@ -552,43 +640,44 @@ function renderDetail(i) {
   const adv = last.advanceProb.get(team.id), z30 = last.threeZero.get(team.id), z03 = last.zeroThree.get(team.id);
   const s = STATS.get(norm(team.name));
   const tierBadges = (t) => ['S', 'A', 'B', 'C'].filter((k) => t[k] > 0).map((k) => `<span class="tier">${k}</span>`).join('');
-  const rateColor = (r) => (r >= 1.1 ? 'var(--win)' : r < 1 ? 'var(--lose)' : 'var(--fg)');
+  const rateColor = (r) => (r >= 1.1 ? 'var(--cy)' : r < 1 ? 'var(--lose)' : 'var(--fg)');
   const recent = s ? `
-    <div class="dlabel">Retrospecto</div>
-    <div class="row" style="gap:16px">
-      <span class="pill">Média dos adversários #${Math.round(s.avgOppRank)}</span>
+    <div class="dlabel">RETROSPECTO</div>
+    <div class="row" style="gap:12px">
+      <span class="pill">MÉDIA DOS ADVERSÁRIOS #${Math.round(s.avgOppRank)}</span>
       <span>${tierBadges(s.tiers) || '<span class="muted">sem tier</span>'}</span>
     </div>
-    <table class="teamstats" style="margin-top:8px"><tbody>${s.events.map((e) =>
-      `<tr><td>${e.name}</td><td style="text-align:right;white-space:nowrap">${e.tier ? `<span class="tier">${e.tier}</span>` : ''}<span class="muted">${e.placement}</span></td></tr>`).join('')}</tbody></table>
-    <div class="dlabel">Elenco <span class="muted" style="font-weight:400;font-family:Inter">rating 3.0</span></div>
-    <table class="teamstats"><tbody>${s.players.map((p) =>
-      `<tr><td>${p.name}</td><td class="mono" style="text-align:right;color:${rateColor(p.rating)}">${p.rating.toFixed(2)}</td></tr>`).join('')}</tbody></table>` : '';
-  $('detailTitle').textContent = `${team.seed}. ${team.name}`;
+    <div style="margin-top:8px">${s.events.map((e) =>
+      `<div class="drow"><span>${e.name}</span><span class="r">${e.tier ? `<span class="tier">${e.tier}</span>` : ''}<span class="muted">${e.placement}</span></span></div>`).join('')}</div>
+    <div class="dlabel">ELENCO <span class="muted">rating 3.0</span></div>
+    <div>${s.players.map((p) =>
+      `<div class="drow"><span>${p.name}</span><span class="r" style="color:${rateColor(p.rating)}">${p.rating.toFixed(2)}</span></div>`).join('')}</div>` : '';
+  $('detail').className = '';
   $('detail').innerHTML = `
-    <div class="row" style="gap:16px;margin-bottom:8px">
-      <span class="pill adv">avança ${(adv * 100).toFixed(1)}%</span>
-      <span class="pill">3-0 ${(z30 * 100).toFixed(1)}%</span>
-      <span class="pill elim">0-3 ${(z03 * 100).toFixed(1)}%</span>
+    <div class="dhead">${icon(team.name, 24)}<span class="dname">${team.seed} · ${team.name}</span>
+      <span class="dpills">
+        <span class="pill adv">avança ${(adv * 100).toFixed(1)}%</span>
+        <span class="pill">3-0 ${(z30 * 100).toFixed(1)}%</span>
+        <span class="pill elim">0-3 ${(z03 * 100).toFixed(1)}%</span>
+      </span>
     </div>
     ${recent}
-    <div class="dlabel">Pode enfrentar</div>
-    <table class="teamstats"><tbody>${opp.map((x) =>
-      `<tr><td>${x.t.seed}. ${x.t.name}</td><td class="mono" style="text-align:right">${(x.p * 100).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`;
+    <div class="dlabel">PODE ENFRENTAR — PROBABILIDADE DE CONFRONTO</div>
+    <div>${opp.map((x) =>
+      `<div class="oprow"><span class="rkteam"><span class="tseed">${x.t.seed}</span>${icon(x.t.name, 16)}<span class="nm">${x.t.name}</span></span><div class="opbar"><div class="fill" style="width:${(x.p * 100).toFixed(0)}%"></div></div><span class="r mono">${(x.p * 100).toFixed(1)}</span></div>`).join('')}</div>`;
 }
 
 function renderLive() {
   const pairs = E.nextRoundPairings(teams, lockedMatches);
-  if (pairs.length === 0) { $('live').innerHTML = '<span class="muted">Stage encerrado — todos definidos.</span>'; return; }
+  if (pairs.length === 0) { $('live').innerHTML = '<span class="muted" style="font-family:\'JetBrains Mono\',monospace;font-size:11px">Stage encerrado — todos definidos.</span>'; return; }
   $('live').innerHTML = pairs.map(([a, b]) => {
     const key = E.pairKey(a, b);
     const sel = roundPicks[key];
     const bo3 = isDecisive(a, b);
     return `<div class="match">
-      <button class="pick ${sel === a ? 'sel' : ''}" data-k="${key}" data-w="${a}">${nameOf(a)}</button>
-      <span class="vs">×</span>
-      <button class="pick ${sel === b ? 'sel' : ''}" data-k="${key}" data-w="${b}">${nameOf(b)}</button>
-      ${bo3 ? '<span class="bo3">MD3</span>' : ''}
+      <button class="pick ${sel === a ? 'sel' : ''}" data-k="${key}" data-w="${a}">${icon(nameOf(a), 14)}<span>${nameOf(a)}</span></button>
+      <div class="vs${bo3 ? ' bo3' : ''}">${bo3 ? 'MD3' : '×'}</div>
+      <button class="pick ${sel === b ? 'sel' : ''}" data-k="${key}" data-w="${b}">${icon(nameOf(b), 14)}<span>${nameOf(b)}</span></button>
     </div>`;
   }).join('');
   $('live').querySelectorAll('.pick').forEach((btn) =>
@@ -604,7 +693,7 @@ function isDecisive(a, b) {
 
 function renderLocked() {
   $('lockedList').innerHTML = lockedMatches.length
-    ? 'Travados: ' + lockedMatches.map((m) => `${nameOf(m.winner)}✓ v ${nameOf(m.winner === m.a ? m.b : m.a)}`).join(' · ')
+    ? 'TRAVADOS: ' + lockedMatches.map((m) => `${nameOf(m.winner)}✓ v ${nameOf(m.winner === m.a ? m.b : m.a)}`).join(' · ')
     : '';
 }
 
@@ -621,14 +710,16 @@ function confirmRound() {
 
 function renderOverrides() {
   $('ovList').innerHTML = overrides.map((o, i) =>
-    `<div class="row"><span>${nameOf(o.a)} bate ${nameOf(o.b)} = ${o.p}</span>
-     <button class="ghost" data-i="${i}" style="padding:1px 7px">×</button></div>`).join('');
+    `<div class="row" style="margin-top:6px"><span class="mono" style="font-size:11px">${nameOf(o.a)} bate ${nameOf(o.b)} = ${o.p}</span>
+     <button class="btn ghost dim" data-i="${i}" style="padding:1px 7px">×</button></div>`).join('');
   $('ovList').querySelectorAll('button').forEach((b) =>
     b.addEventListener('click', () => { overrides.splice(+b.dataset.i, 1); renderOverrides(); }));
 }
 
+function setUpsetLabel() { const v = $('upset').value; $('upsetVal').textContent = v; $('upsetVal2').textContent = v; }
+
 $('run').addEventListener('click', run);
-$('upset').addEventListener('input', () => $('upsetVal').textContent = $('upset').value);
+$('upset').addEventListener('input', setUpsetLabel);
 $('confirmRound').addEventListener('click', confirmRound);
 $('resetResults').addEventListener('click', () => { lockedMatches = []; roundPicks = {}; renderLive(); });
 $('ovAdd').addEventListener('click', () => {
@@ -639,7 +730,7 @@ $('ovAdd').addEventListener('click', () => {
   renderOverrides();
 });
 
-$('upsetVal').textContent = $('upset').value;
+setUpsetLabel();
 applyData();
 renderTeams();
 renderLive();
