@@ -55,26 +55,25 @@
     return a < b ? a + '-' + b : b + '-' + a;
   }
 
-  function buildState(teams, results) {
+  function initState(teams) {
     const state = {};
     for (const t of teams) state[t.id] = { seed: t.seed, wins: 0, losses: 0, opponents: [] };
-    for (const m of results) {
-      const loser = m.winner === m.a ? m.b : m.a;
-      state[m.winner].wins++;
-      state[loser].losses++;
-      state[m.a].opponents.push(m.b);
-      state[m.b].opponents.push(m.a);
-    }
     return state;
   }
 
-  // Pareamentos da próxima rodada (todos os grupos ativos) dado os resultados já conhecidos.
-  function nextRoundPairings(teams, results) {
-    const state = buildState(teams, results);
-    const played = new Set(results.map((m) => pairKey(m.a, m.b)));
+  function applyResult(state, played, a, b, winner) {
+    const loser = winner === a ? b : a;
+    state[winner].wins++;
+    state[loser].losses++;
+    state[a].opponents.push(b);
+    state[b].opponents.push(a);
+    played.add(pairKey(a, b));
+  }
+
+  // Pareamentos da rodada atual: todos os grupos ativos do estado dado.
+  function pairActive(teams, state, played) {
     const hasPlayed = (a, b) => played.has(pairKey(a, b));
     const active = teams.map((t) => t.id).filter((id) => state[id].wins < 3 && state[id].losses < 3);
-
     const groups = new Map();
     for (const id of active) {
       const k = state[id].wins + '-' + state[id].losses;
@@ -82,11 +81,7 @@
       groups.get(k).push(id);
     }
     // Ordena os grupos por record (mais vitórias primeiro) para ordem de rodada estável.
-    const keys = [...groups.keys()].sort((x, y) => {
-      const [xw] = x.split('-').map(Number);
-      const [yw] = y.split('-').map(Number);
-      return yw - xw;
-    });
+    const keys = [...groups.keys()].sort((x, y) => Number(y.split('-')[0]) - Number(x.split('-')[0]));
     const pairs = [];
     for (const k of keys) {
       for (const [a, b] of pairGroup(seedGroup(groups.get(k), state), hasPlayed)) pairs.push([a, b]);
@@ -94,29 +89,36 @@
     return pairs;
   }
 
+  // Pareamentos da próxima rodada dado os resultados já conhecidos (usado pelo painel ao vivo).
+  function nextRoundPairings(teams, results) {
+    const state = initState(teams);
+    const played = new Set();
+    for (const m of results) applyResult(state, played, m.a, m.b, m.winner);
+    return pairActive(teams, state, played);
+  }
+
   function simulateStage(teams, opts) {
     const resolve = opts.resolve;
     const locked = opts.locked || new Map();
-    const results = [];
+    const state = initState(teams);
+    const played = new Set();
     const matchups = [];
 
-    let pairs = nextRoundPairings(teams, results);
+    let pairs = pairActive(teams, state, played);
     while (pairs.length > 0) {
-      const state = buildState(teams, results);
       for (const [a, b] of pairs) {
         const isBo3 = state[a].wins === 2 || state[a].losses === 2 || state[b].wins === 2 || state[b].losses === 2;
         const forced = locked.get(pairKey(a, b));
         const winner = forced !== undefined ? forced : resolve(a, b, isBo3);
-        results.push({ a, b, winner });
+        applyResult(state, played, a, b, winner);
         matchups.push([a, b]);
       }
-      pairs = nextRoundPairings(teams, results);
+      pairs = pairActive(teams, state, played);
     }
 
-    const finalState = buildState(teams, results);
     const standings = new Map();
     for (const t of teams) {
-      const s = finalState[t.id];
+      const s = state[t.id];
       standings.set(t.id, { wins: s.wins, losses: s.losses, result: s.wins === 3 ? 'advance' : 'eliminate' });
     }
     return { matchups, standings };
