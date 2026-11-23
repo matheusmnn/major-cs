@@ -1,0 +1,6 @@
+{
+  "_note": "Preencher com um stage suíço de 16 times já concluído para validar o pareamento. teams: lista {id, seed, name} com seed inicial 1..16. matches: TODOS os confrontos do stage, cada um {a, b, winner} (ids), em qualquer ordem. Enquanto matches estiver vazio, o teste de validação fica como skip.",
+  "event": "",
+  "teams": [],
+  "matches": []
+}
