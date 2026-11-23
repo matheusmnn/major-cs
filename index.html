@@ -4,116 +4,142 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Confrontos — Major CS2 (fase suíça)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1216; --panel: #171c22; --line: #263040; --fg: #e6edf3;
-    --muted: #8b98a8; --accent: #4da3ff; --win: #2f9e5a; --lose: #c6484b;
+    --bg: #0a0d12; --panel: #12171f; --panel2: #0c1016; --line: #222c39;
+    --fg: #e9eff6; --muted: #7f8c9d; --gold: #ecb844; --gold-ink: #1b1405;
+    --win: #3ec47d; --lose: #e05d60;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg);
-    font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 16px; }
-  h1 { font-size: 18px; margin: 0 0 4px; }
-  .sub { color: var(--muted); margin: 0 0 16px; font-size: 13px; }
-  .grid { display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
-  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
-  .panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 10px; }
+    font: 14px/1.5 Inter, system-ui, sans-serif; padding: 20px 16px 40px; }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+    padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+  h1 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 22px;
+    letter-spacing: .01em; margin: 0; }
+  h1 b { color: var(--gold); font-weight: 700; }
+  .sub { color: var(--muted); margin: 0; font-size: 13px; max-width: 62ch; }
+  .grid { display: grid; grid-template-columns: 330px 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 880px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .panel + .panel, .grid > div > .panel + .panel { margin-top: 14px; }
+  .panel h2 { font-family: 'Chakra Petch', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: .02em; color: var(--fg); margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  .panel h2::before { content: ''; width: 3px; height: 13px; background: var(--gold); border-radius: 2px; }
   table { border-collapse: collapse; width: 100%; }
-  .teams td { padding: 2px 4px; }
-  .teams input { width: 100%; background: #0d1117; border: 1px solid var(--line); color: var(--fg);
-    border-radius: 5px; padding: 4px 6px; font: inherit; }
-  .teams input.name { width: 100%; } .teams input.num { width: 64px; text-align: right; }
-  .seedcol { color: var(--muted); text-align: right; width: 22px; }
-  .controls label { display: block; margin: 8px 0 2px; color: var(--muted); font-size: 12px; }
-  .controls input[type=number] { width: 120px; }
-  button { background: var(--accent); color: #04121f; border: 0; border-radius: 6px;
-    padding: 8px 14px; font: inherit; font-weight: 600; cursor: pointer; }
-  button.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); font-weight: 400; }
+  .teams td { padding: 3px 4px; }
+  input, select { background: var(--panel2); border: 1px solid var(--line); color: var(--fg);
+    border-radius: 7px; padding: 6px 8px; font: inherit; }
+  input:focus, select:focus { outline: 2px solid var(--gold); outline-offset: -1px; border-color: var(--gold); }
+  .teams input.name { width: 100%; } .teams input.num { width: 70px; text-align: right; font-variant-numeric: tabular-nums; }
+  .seedcol { color: var(--muted); text-align: right; width: 24px; font-family: 'Chakra Petch', sans-serif;
+    font-variant-numeric: tabular-nums; }
+  .controls label { display: block; margin: 12px 0 4px; color: var(--muted); font-size: 12px; }
+  .controls input[type=number] { width: 130px; }
+  input[type=range] { width: 100%; accent-color: var(--gold); padding: 0; }
+  button { background: var(--gold); color: var(--gold-ink); border: 0; border-radius: 8px;
+    padding: 9px 18px; font: inherit; font-weight: 600; cursor: pointer; transition: filter .12s; }
+  button:hover:not(:disabled) { filter: brightness(1.08); }
+  button.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); font-weight: 500; padding: 7px 12px; }
+  button.ghost:hover:not(:disabled) { border-color: var(--gold); filter: none; }
   button:disabled { opacity: .5; cursor: default; }
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   /* heatmap */
-  .heat { border-collapse: collapse; font-size: 11px; }
-  .heat th { color: var(--muted); font-weight: 500; padding: 2px; }
-  .heat th.rot { height: 64px; white-space: nowrap; }
-  .heat th.rot div { transform: rotate(-90deg); width: 16px; }
-  .heat td { width: 26px; height: 24px; text-align: center; border: 1px solid #0d1117; cursor: default; }
-  .heat td.diag { background: #0d1117; color: #3a4452; }
-  .heat td.zero { background: #12171e; color: #39414c; }
-  .heat .rowlab { color: var(--muted); text-align: right; padding-right: 6px; white-space: nowrap; }
-  .pill { display: inline-block; padding: 1px 6px; border-radius: 10px; background: #0d1117; color: var(--muted); }
+  .heat { border-collapse: separate; border-spacing: 2px; font-size: 11px; font-variant-numeric: tabular-nums; }
+  .heat th { color: var(--muted); font-weight: 500; padding: 1px; }
+  .heat th.rot { height: 60px; white-space: nowrap; vertical-align: bottom; }
+  .heat th.rot div { transform: rotate(-90deg); width: 18px; font-family: 'Chakra Petch', sans-serif; }
+  .heat td { width: 26px; height: 24px; text-align: center; border-radius: 4px; cursor: default; color: var(--gold-ink); }
+  .heat td.diag { background: #0c1016; }
+  .heat td.zero { background: #0e1219; }
+  .heat .rowlab { color: var(--fg); text-align: right; padding-right: 8px; white-space: nowrap; cursor: pointer; font-weight: 400; }
+  .heat .rowlab:hover { color: var(--gold); }
+  .heat .rowlab s { color: var(--muted); text-decoration: none; font-family: 'Chakra Petch', sans-serif; }
+  .legend { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .legend .bar { height: 10px; width: 160px; border-radius: 5px;
+    background: linear-gradient(90deg, hsl(44 36% 17%), hsl(44 85% 60%)); }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 20px; background: var(--panel2);
+    border: 1px solid var(--line); color: var(--muted); font-size: 12px; font-weight: 500; }
   /* live */
-  .match { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
+  .match { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
   .match .vs { color: var(--muted); font-size: 12px; }
-  .pick { padding: 4px 8px; border-radius: 5px; border: 1px solid var(--line); background: #0d1117;
-    color: var(--fg); cursor: pointer; font: inherit; }
-  .pick.sel { background: var(--win); color: #03140a; border-color: var(--win); }
-  .bo3 { color: #d9a441; font-size: 11px; }
+  .pick { padding: 5px 10px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel2);
+    color: var(--fg); cursor: pointer; font: inherit; flex: 1; transition: border-color .12s; }
+  .pick:hover { border-color: var(--gold); }
+  .pick.sel { background: var(--win); color: #042111; border-color: var(--win); font-weight: 600; }
+  .bo3 { color: var(--gold); font-size: 10px; font-weight: 600; font-family: 'Chakra Petch', sans-serif; }
   .adv { color: var(--win); } .elim { color: var(--lose); }
-  .teamstats td { padding: 2px 6px; border-bottom: 1px solid #1c232c; }
+  .teamstats td { padding: 3px 6px; border-bottom: 1px solid var(--line); }
   .muted { color: var(--muted); } .mono { font-variant-numeric: tabular-nums; }
-  details { margin-top: 8px; } summary { cursor: pointer; color: var(--muted); }
+  details { margin-top: 14px; } summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 </style>
 </head>
 <body>
-  <h1>Confrontos — Major CS2 (fase suíça)</h1>
-  <p class="sub">Monte Carlo: probabilidade de cada time enfrentar cada outro, respeitando seed inicial, Buchholz e sem-revanche. Seed = estrutura; força = quem ganha.</p>
+  <div class="wrap">
+    <header>
+      <h1>Major CS2 — <b>Confrontos</b></h1>
+      <p class="sub">Simula a fase suíça e mostra a chance de cada time enfrentar cada outro. A seed define a estrutura; a força define quem ganha.</p>
+    </header>
 
-  <div class="grid">
-    <div>
-      <div class="panel">
-        <h2>Times (seed · força)</h2>
-        <table class="teams"><tbody id="teamRows"></tbody></table>
-      </div>
-
-      <div class="panel controls" style="margin-top:12px">
-        <h2>Parâmetros</h2>
-        <label>Simulações (N) — maior = mais preciso e mais lento</label>
-        <input id="N" type="number" value="50000" min="1000" step="1000">
-        <label>Fator de zebra (upset): <span id="upsetVal" class="mono"></span></label>
-        <input id="upset" type="range" min="80" max="1200" step="20" value="400" style="width:100%">
-        <span class="muted" style="font-size:12px">menor = favorito domina · maior = mais zebra</span>
-        <label>Seed do RNG (opcional, p/ repetir)</label>
-        <input id="rngseed" type="number" value="1" min="0">
-        <label style="margin-top:10px"><input type="checkbox" id="useH2H" checked> usar retrospecto direto (H2H)</label>
-        <div id="dataStatus" class="muted" style="font-size:12px;margin-top:6px"></div>
-        <div class="row" style="margin-top:12px">
-          <button id="run">Rodar</button>
-          <span id="status" class="muted"></span>
+    <div class="grid">
+      <div>
+        <div class="panel">
+          <h2>Times e força</h2>
+          <table class="teams"><tbody id="teamRows"></tbody></table>
         </div>
-      </div>
 
-      <div class="panel" style="margin-top:12px">
-        <h2>Resultados travados (ao vivo)</h2>
-        <div id="live"></div>
-        <div class="row" style="margin-top:10px">
-          <button id="confirmRound" class="ghost">Confirmar rodada</button>
-          <button id="resetResults" class="ghost">Zerar resultados</button>
-        </div>
-        <div id="lockedList" class="muted" style="margin-top:8px;font-size:12px"></div>
-      </div>
-
-      <details class="panel">
-        <summary>Overrides de confronto (P na mão)</summary>
-        <div style="margin-top:8px">
-          <div class="row">
-            <select id="ovA"></select><span class="vs">bate</span><select id="ovB"></select>
-            <input id="ovP" type="number" min="0" max="1" step="0.01" value="0.5" style="width:72px">
-            <button id="ovAdd" class="ghost">+</button>
+        <div class="panel controls">
+          <h2>Parâmetros</h2>
+          <label>Simulações — mais = mais preciso e mais lento</label>
+          <input id="N" type="number" value="50000" min="1000" step="1000">
+          <label>Zebra: <span id="upsetVal" class="mono"></span>/100 — 0 favorito domina, 100 quase moeda</label>
+          <input id="upset" type="range" min="0" max="100" step="1" value="50">
+          <label>Semente do sorteio (repete o mesmo resultado)</label>
+          <input id="rngseed" type="number" value="1" min="0">
+          <div class="row" style="margin-top:16px">
+            <button id="run">Rodar</button>
+            <span id="status" class="muted"></span>
           </div>
-          <div id="ovList" style="margin-top:8px;font-size:12px"></div>
         </div>
-      </details>
-    </div>
 
-    <div>
-      <div class="panel">
-        <h2>Matriz de confronto — P(se enfrentam no stage)</h2>
-        <div style="overflow:auto"><div id="heat"></div></div>
-        <p class="muted" style="font-size:12px;margin-top:8px">Célula escura vazia = não se enfrentam em nenhum cenário. Clique numa linha para ver o detalhe do time.</p>
+        <div class="panel">
+          <h2>Resultados ao vivo</h2>
+          <div id="live"></div>
+          <div class="row" style="margin-top:12px">
+            <button id="confirmRound" class="ghost">Confirmar rodada</button>
+            <button id="resetResults" class="ghost">Zerar</button>
+          </div>
+          <div id="lockedList" class="muted" style="margin-top:10px;font-size:12px"></div>
+        </div>
+
+        <details class="panel">
+          <summary>Ajustar um confronto na mão</summary>
+          <div style="margin-top:12px">
+            <div class="row">
+              <select id="ovA"></select><span class="vs">bate</span><select id="ovB"></select>
+              <input id="ovP" type="number" min="0" max="1" step="0.01" value="0.5" style="width:76px">
+              <button id="ovAdd" class="ghost">+</button>
+            </div>
+            <div id="ovList" style="margin-top:10px;font-size:12px"></div>
+          </div>
+        </details>
       </div>
-      <div class="panel" style="margin-top:12px">
-        <h2 id="detailTitle">Detalhe do time</h2>
-        <div id="detail" class="muted">Rode e clique num time na matriz.</div>
+
+      <div>
+        <div class="panel">
+          <h2>Quem enfrenta quem</h2>
+          <div style="overflow:auto"><div id="heat"></div></div>
+          <div class="legend"><span>improvável</span><span class="bar"></span><span>certo</span>
+            <span style="margin-left:auto">vazio = nunca se cruzam · clique numa linha p/ detalhe</span></div>
+        </div>
+        <div class="panel">
+          <h2 id="detailTitle">Detalhe do time</h2>
+          <div id="detail" class="muted">Rode e clique num time na matriz.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -142,21 +168,22 @@ const nameOf = (id) => teams.find((t) => t.id === id).name;
 const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 const idByName = (n) => { const t = teams.find((x) => norm(x.name) === norm(n)); return t ? t.id : null; };
 
-// Aplica forças do data.json (por nome) e informa o status.
+// Aplica forças do data.json (por nome), se houver.
 function applyData() {
-  if (!DATA) { $('dataStatus').textContent = 'sem data.json — força manual'; return; }
-  let hit = 0;
+  if (!DATA) return;
   for (const d of DATA.teams || []) {
     const t = teams.find((x) => norm(x.name) === norm(d.name));
-    if (t && typeof d.force === 'number') { t.strength = d.force; hit++; }
+    if (t && typeof d.force === 'number') t.strength = d.force;
   }
-  $('dataStatus').textContent = `data.json: ${hit}/${teams.length} forças + ${(DATA.h2h || []).length} H2H`;
 }
+
+// Knob de zebra 0..100 -> escala interna. 0 = favorito domina; 100 = quase moeda.
+function upsetScale(s) { return 50 * Math.pow(60, s / 100); }
 
 // Map pairKey(id) -> {low, high} a partir do H2H por nome do data.json.
 function h2hMap() {
   const m = new Map();
-  if (!DATA || !$('useH2H').checked) return m;
+  if (!DATA) return m;
   for (const h of DATA.h2h || []) {
     const ia = idByName(h.a), ib = idByName(h.b);
     if (!ia || !ib) continue;
@@ -200,7 +227,7 @@ function run() {
   setTimeout(() => {
     const t0 = performance.now();
     last = E.runMonteCarlo(teams, {
-      N: +$('N').value, upset: +$('upset').value,
+      N: +$('N').value, upset: upsetScale(+$('upset').value),
       locked: lockedMap(), seed: +$('rngseed').value >>> 0, probOverride: overrideMap(),
       h2h: h2hMap(), k: 4,
     });
@@ -210,11 +237,8 @@ function run() {
   }, 10);
 }
 
-function color(p) {
-  if (p <= 0) return null;
-  const h = 210, l = 14 + p * 42; // azul, mais claro = mais provável
-  return `hsl(${h} 70% ${l}%)`;
-}
+const cellBg = (p) => `hsl(44 ${36 + p * 49}% ${17 + p * 43}%)`;
+const cellInk = (p) => (p > 0.42 ? 'var(--gold-ink)' : '#aeb9c6');
 
 function renderHeat() {
   const n = teams.length, m = last.meetProb;
@@ -222,13 +246,13 @@ function renderHeat() {
   for (const t of teams) html += `<th class="rot"><div>${t.seed}</div></th>`;
   html += '</tr></thead><tbody>';
   for (let i = 0; i < n; i++) {
-    html += `<tr><th class="rowlab" data-i="${i}">${teams[i].seed}. ${teams[i].name}</th>`;
+    html += `<tr><th class="rowlab" data-i="${i}"><s>${teams[i].seed}</s> ${teams[i].name}</th>`;
     for (let j = 0; j < n; j++) {
-      if (i === j) { html += '<td class="diag">·</td>'; continue; }
+      if (i === j) { html += '<td class="diag"></td>'; continue; }
       const p = m[i][j];
       if (p <= 0) { html += '<td class="zero" title="não se enfrentam em nenhum cenário"></td>'; continue; }
       const pct = Math.round(p * 100);
-      html += `<td style="background:${color(p)}" title="${teams[i].name} × ${teams[j].name}: ${(p * 100).toFixed(1)}%">${pct}</td>`;
+      html += `<td style="background:${cellBg(p)};color:${cellInk(p)}" title="${teams[i].name} × ${teams[j].name}: ${(p * 100).toFixed(1)}%">${pct}</td>`;
     }
     html += '</tr>';
   }
@@ -307,6 +331,7 @@ function renderOverrides() {
 
 $('run').addEventListener('click', run);
 $('upset').addEventListener('input', () => $('upsetVal').textContent = $('upset').value);
+$('upset').addEventListener('change', run);
 $('confirmRound').addEventListener('click', confirmRound);
 $('resetResults').addEventListener('click', () => { lockedMatches = []; roundPicks = {}; renderLive(); run(); });
 $('ovAdd').addEventListener('click', () => {
@@ -317,7 +342,6 @@ $('ovAdd').addEventListener('click', () => {
   renderOverrides(); run();
 });
 
-$('useH2H').addEventListener('change', run);
 $('upsetVal').textContent = $('upset').value;
 applyData();
 renderTeams();
