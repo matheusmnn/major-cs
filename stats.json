@@ -1,0 +1,171 @@
+{
+  "generatedAt": "2026-11-23",
+  "rankingSource": "global/valve",
+  "note": "Extraído à mão dos prints em assets/ (últimos jogos, ranking global Valve top-96, listas de tier). Adversário fora do top-96 = rank 100. Evento fora das listas S/A/B/C = tier null. tiers = contagem de eventos distintos por tier.",
+  "teams": {
+    "Ninjas in Pyjamas": {
+      "avgOppRank": 37.2, "oppCount": 16, "unrankedOpps": 1,
+      "tiers": { "S": 1, "A": 1, "B": 2, "C": 0 },
+      "events": [
+        { "name": "Stake Ranked Episode 6", "tier": "A", "placement": "5-6th" },
+        { "name": "Stake Pulse Beat III", "tier": "B", "placement": "1st" },
+        { "name": "Thunderpick World Championship 2026", "tier": "S", "placement": "7-8th" },
+        { "name": "ROG JOURNEY Autumn 2026", "tier": "B", "placement": "1st" }
+      ]
+    },
+    "PARIVISION": {
+      "avgOppRank": 17.8, "oppCount": 16, "unrankedOpps": 0,
+      "tiers": { "S": 2, "A": 1, "B": 0, "C": 0 },
+      "events": [
+        { "name": "PGL Cluj-Napoca 2027 Closed Qualifier", "tier": null, "placement": "5-6th" },
+        { "name": "IEM Beijing 2026", "tier": "S", "placement": "5-6th" },
+        { "name": "1win Private Club #2", "tier": "A", "placement": "2nd" },
+        { "name": "Thunderpick World Championship 2026", "tier": "S", "placement": "7-8th" },
+        { "name": "ESL Pro League Season 24", "tier": null, "placement": "5-8th" }
+      ]
+    },
+    "Heroic": {
+      "avgOppRank": 30.8, "oppCount": 16, "unrankedOpps": 1,
+      "tiers": { "S": 1, "A": 0, "B": 2, "C": 0 },
+      "events": [
+        { "name": "PGL Cluj-Napoca 2027 Closed Qualifier", "tier": null, "placement": "4th" },
+        { "name": "IEM Beijing 2026", "tier": "S", "placement": "9-12th" },
+        { "name": "Digital Crusade DraculaN Season 7", "tier": "B", "placement": "7-8th" },
+        { "name": "Stake Pulse Beat III", "tier": "B", "placement": "3rd" }
+      ]
+    },
+    "FaZe": {
+      "avgOppRank": 42.6, "oppCount": 16, "unrankedOpps": 1,
+      "tiers": { "S": 1, "A": 0, "B": 2, "C": 0 },
+      "events": [
+        { "name": "PGL Cluj-Napoca 2027 Closed Qualifier", "tier": null, "placement": "7-8th" },
+        { "name": "IEM Beijing 2026", "tier": "S", "placement": "13-16th" },
+        { "name": "RLG Tesla Cup 2026", "tier": "B", "placement": "3rd" },
+        { "name": "Digital Crusade DraculaN Season 7", "tier": "B", "placement": "5-6th" },
+        { "name": "Roman Imperium Cup IX", "tier": null, "placement": "1st" }
+      ]
+    },
+    "Team Liquid": {
+      "avgOppRank": 20.2, "oppCount": 16, "unrankedOpps": 0,
+      "tiers": { "S": 2, "A": 1, "B": 1, "C": 0 },
+      "events": [
+        { "name": "IEM Beijing 2026", "tier": "S", "placement": "7-8th" },
+        { "name": "PGL Masters Bucharest 2026", "tier": "S", "placement": "9-11th" },
+        { "name": "1win Private Club #2", "tier": "A", "placement": "7-8th" },
+        { "name": "Stake Pulse Beat III", "tier": "B", "placement": "5-8th" },
+        { "name": "iBUYPOWER Masters FML 2026", "tier": null, "placement": "1st" }
+      ]
+    },
+    "Eternal Fire": {
+      "avgOppRank": 41.4, "oppCount": 16, "unrankedOpps": 0,
+      "tiers": { "S": 0, "A": 1, "B": 1, "C": 0 },
+      "events": [
+        { "name": "PGL Cluj-Napoca 2027 Closed Qualifier", "tier": null, "placement": "5-6th" },
+        { "name": "Stake Ranked Episode 5", "tier": "A", "placement": "1st" },
+        { "name": "Digital Crusade DraculaN Season 7", "tier": "B", "placement": "1st" },
+        { "name": "PGL Bucharest 2027 Closed Qualifier", "tier": null, "placement": "7-8th" }
+      ]
+    },
+    "100 Thieves": {
+      "avgOppRank": 43.7, "oppCount": 16, "unrankedOpps": 3,
+      "tiers": { "S": 0, "A": 0, "B": 3, "C": 0 },
+      "events": [
+        { "name": "PGL Cluj-Napoca 2027 Closed Qualifier", "tier": null, "placement": "1st" },
+        { "name": "FiReSPORTS Last Chance 2026", "tier": "B", "placement": "1st" },
+        { "name": "Stake Pulse Beat III", "tier": "B", "placement": "4th" },
+        { "name": "ROG JOURNEY Autumn 2026", "tier": "B", "placement": "5-8th" }
+      ]
+    },
+    "9z": {
+      "avgOppRank": 19.4, "oppCount": 16, "unrankedOpps": 0,
+      "tiers": { "S": 3, "A": 0, "B": 0, "C": 0 },
+      "events": [
+        { "name": "IEM Beijing 2026", "tier": "S", "placement": "13-16th" },
+        { "name": "PGL Masters Bucharest 2026", "tier": "S", "placement": "15-16th" },
+        { "name": "Thunderpick World Championship 2026", "tier": "S", "placement": "5-6th" },
+        { "name": "ESL Pro League Season 24", "tier": null, "placement": "9-11th" },
+        { "name": "FISSURE Playground 3", "tier": null, "placement": "9-12th" }
+      ]
+    },
+    "M80": {
+      "avgOppRank": 32.9, "oppCount": 16, "unrankedOpps": 1,
+      "tiers": { "S": 0, "A": 1, "B": 0, "C": 0 },
+      "events": [
+        { "name": "ESL Pro League Season 24", "tier": null, "placement": "9-11th" },
+        { "name": "iBUYPOWER Masters FML 2026", "tier": null, "placement": "3rd" },
+        { "name": "Logitech G Play Connect 2026", "tier": "A", "placement": "5-6th" }
+      ]
+    },
+    "DENDELE": {
+      "avgOppRank": 45.6, "oppCount": 16, "unrankedOpps": 4,
+      "tiers": { "S": 1, "A": 0, "B": 0, "C": 0 },
+      "events": [
+        { "name": "Gamers Club Masters VII", "tier": null, "placement": "1st" },
+        { "name": "PGL Masters Bucharest 2026", "tier": "S", "placement": "12-14th" },
+        { "name": "FRAG University 2026", "tier": null, "placement": "2nd" },
+        { "name": "iBUYPOWER Masters FML 2026", "tier": null, "placement": "4th" }
+      ]
+    },
+    "Imperial": {
+      "avgOppRank": 63.3, "oppCount": 16, "unrankedOpps": 4,
+      "tiers": { "S": 0, "A": 0, "B": 0, "C": 0 },
+      "events": [
+        { "name": "Gamers Club Masters VII", "tier": null, "placement": "2nd" },
+        { "name": "Circuit X Curitiba Season 4", "tier": null, "placement": "1st" },
+        { "name": "FRAG University 2026", "tier": null, "placement": "3rd" },
+        { "name": "FERJEE In House Season 2", "tier": null, "placement": "1st" }
+      ]
+    },
+    "Wildcard": {
+      "avgOppRank": 60.8, "oppCount": 16, "unrankedOpps": 4,
+      "tiers": { "S": 0, "A": 0, "B": 1, "C": 0 },
+      "events": [
+        { "name": "FiReSPORTS Last Chance 2026", "tier": "B", "placement": "2nd" },
+        { "name": "FRAG University 2026", "tier": null, "placement": "1st" },
+        { "name": "FOX Legacy Season 1", "tier": null, "placement": "5-6th" },
+        { "name": "iBUYPOWER Masters FML 2026", "tier": null, "placement": "2nd" }
+      ]
+    },
+    "BC.Game": {
+      "avgOppRank": 56.7, "oppCount": 16, "unrankedOpps": 4,
+      "tiers": { "S": 0, "A": 0, "B": 3, "C": 0 },
+      "events": [
+        { "name": "HyperX Retake Season 13", "tier": null, "placement": "9-12th" },
+        { "name": "Digital Crusade DraculaN Season 7", "tier": "B", "placement": "4th" },
+        { "name": "Stake Pulse Beat III", "tier": "B", "placement": "9-12th" },
+        { "name": "ROG JOURNEY Autumn 2026", "tier": "B", "placement": "5-8th" }
+      ]
+    },
+    "FlyQuest": {
+      "avgOppRank": 94.3, "oppCount": 16, "unrankedOpps": 11,
+      "tiers": { "S": 0, "A": 0, "B": 3, "C": 0 },
+      "events": [
+        { "name": "DFRAG Invitational 2026", "tier": "B", "placement": "1st" },
+        { "name": "Logitech G Pro Series 2026", "tier": "B", "placement": "2nd" },
+        { "name": "ANZC Locals Brisbane 2026 Season 2", "tier": null, "placement": "1st" },
+        { "name": "ESL Challenger League Season 52 Oceania Cup 2", "tier": "B", "placement": "1st" }
+      ]
+    },
+    "CW": {
+      "avgOppRank": 88.2, "oppCount": 16, "unrankedOpps": 9,
+      "tiers": { "S": 0, "A": 0, "B": 1, "C": 0 },
+      "events": [
+        { "name": "MESA Pro Series Halloween Cup 2026", "tier": null, "placement": "1st" },
+        { "name": "MaceMedia VOID Autumn Cup 2026", "tier": null, "placement": "2nd" },
+        { "name": "ESL Challenger League Season 52 Asia-Pacific Cup 3", "tier": "B", "placement": "4th" },
+        { "name": "MESA Pro Series Fall 2026", "tier": null, "placement": "1st" }
+      ]
+    },
+    "LVG": {
+      "avgOppRank": 80.8, "oppCount": 16, "unrankedOpps": 8,
+      "tiers": { "S": 0, "A": 0, "B": 2, "C": 0 },
+      "events": [
+        { "name": "MaceMedia VOID Autumn Cup 2026", "tier": null, "placement": "1st" },
+        { "name": "ESL Challenger League Season 52 Asia-Pacific Cup 3", "tier": "B", "placement": "1st" },
+        { "name": "ESL Challenger League Season 52 Asia-Pacific Cup 2", "tier": "B", "placement": "2nd" },
+        { "name": "IEM Beijing 2026 Asia Closed Qualifier", "tier": null, "placement": "5-6th" },
+        { "name": "BLAST Open Porto 2026", "tier": null, "placement": "13-16th" }
+      ]
+    }
+  }
+}
