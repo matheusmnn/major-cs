@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confrontos — Major CS2 (fase suíça)</title>
+<style>
+  :root {
+    --bg: #0f1216; --panel: #171c22; --line: #263040; --fg: #e6edf3;
+    --muted: #8b98a8; --accent: #4da3ff; --win: #2f9e5a; --lose: #c6484b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 16px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 16px; font-size: 13px; }
+  .grid { display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 10px; }
+  table { border-collapse: collapse; width: 100%; }
+  .teams td { padding: 2px 4px; }
+  .teams input { width: 100%; background: #0d1117; border: 1px solid var(--line); color: var(--fg);
+    border-radius: 5px; padding: 4px 6px; font: inherit; }
+  .teams input.name { width: 100%; } .teams input.num { width: 64px; text-align: right; }
+  .seedcol { color: var(--muted); text-align: right; width: 22px; }
+  .controls label { display: block; margin: 8px 0 2px; color: var(--muted); font-size: 12px; }
+  .controls input[type=number] { width: 120px; }
+  button { background: var(--accent); color: #04121f; border: 0; border-radius: 6px;
+    padding: 8px 14px; font: inherit; font-weight: 600; cursor: pointer; }
+  button.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); font-weight: 400; }
+  button:disabled { opacity: .5; cursor: default; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  /* heatmap */
+  .heat { border-collapse: collapse; font-size: 11px; }
+  .heat th { color: var(--muted); font-weight: 500; padding: 2px; }
+  .heat th.rot { height: 64px; white-space: nowrap; }
+  .heat th.rot div { transform: rotate(-90deg); width: 16px; }
+  .heat td { width: 26px; height: 24px; text-align: center; border: 1px solid #0d1117; cursor: default; }
+  .heat td.diag { background: #0d1117; color: #3a4452; }
+  .heat td.zero { background: #12171e; color: #39414c; }
+  .heat .rowlab { color: var(--muted); text-align: right; padding-right: 6px; white-space: nowrap; }
+  .pill { display: inline-block; padding: 1px 6px; border-radius: 10px; background: #0d1117; color: var(--muted); }
+  /* live */
+  .match { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
+  .match .vs { color: var(--muted); font-size: 12px; }
+  .pick { padding: 4px 8px; border-radius: 5px; border: 1px solid var(--line); background: #0d1117;
+    color: var(--fg); cursor: pointer; font: inherit; }
+  .pick.sel { background: var(--win); color: #03140a; border-color: var(--win); }
+  .bo3 { color: #d9a441; font-size: 11px; }
+  .adv { color: var(--win); } .elim { color: var(--lose); }
+  .teamstats td { padding: 2px 6px; border-bottom: 1px solid #1c232c; }
+  .muted { color: var(--muted); } .mono { font-variant-numeric: tabular-nums; }
+  details { margin-top: 8px; } summary { cursor: pointer; color: var(--muted); }
+</style>
+</head>
+<body>
+  <h1>Confrontos — Major CS2 (fase suíça)</h1>
+  <p class="sub">Monte Carlo: probabilidade de cada time enfrentar cada outro, respeitando seed inicial, Buchholz e sem-revanche. Seed = estrutura; força = quem ganha.</p>
+
+  <div class="grid">
+    <div>
+      <div class="panel">
+        <h2>Times (seed · força)</h2>
+        <table class="teams"><tbody id="teamRows"></tbody></table>
+      </div>
+
+      <div class="panel controls" style="margin-top:12px">
+        <h2>Parâmetros</h2>
+        <label>Simulações (N)</label>
+        <input id="N" type="number" value="100000" min="1000" step="1000">
+        <label>Fator de zebra (upset): <span id="upsetVal" class="mono"></span></label>
+        <input id="upset" type="range" min="80" max="1200" step="20" value="400" style="width:100%">
+        <span class="muted" style="font-size:12px">menor = favorito domina · maior = mais zebra</span>
+        <label>Seed do RNG (opcional, p/ repetir)</label>
+        <input id="rngseed" type="number" value="1" min="0">
+        <div class="row" style="margin-top:12px">
+          <button id="run">Rodar</button>
+          <span id="status" class="muted"></span>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:12px">
+        <h2>Resultados travados (ao vivo)</h2>
+        <div id="live"></div>
+        <div class="row" style="margin-top:10px">
+          <button id="confirmRound" class="ghost">Confirmar rodada</button>
+          <button id="resetResults" class="ghost">Zerar resultados</button>
+        </div>
+        <div id="lockedList" class="muted" style="margin-top:8px;font-size:12px"></div>
+      </div>
+
+      <details class="panel">
+        <summary>Overrides de confronto (P na mão)</summary>
+        <div style="margin-top:8px">
+          <div class="row">
+            <select id="ovA"></select><span class="vs">bate</span><select id="ovB"></select>
+            <input id="ovP" type="number" min="0" max="1" step="0.01" value="0.5" style="width:72px">
+            <button id="ovAdd" class="ghost">+</button>
+          </div>
+          <div id="ovList" style="margin-top:8px;font-size:12px"></div>
+        </div>
+      </details>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h2>Matriz de confronto — P(se enfrentam no stage)</h2>
+        <div style="overflow:auto"><div id="heat"></div></div>
+        <p class="muted" style="font-size:12px;margin-top:8px">Célula escura vazia = não se enfrentam em nenhum cenário. Clique numa linha para ver o detalhe do time.</p>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h2 id="detailTitle">Detalhe do time</h2>
+        <div id="detail" class="muted">Rode e clique num time na matriz.</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function (root) {
+  'use strict';
+
+  function mapWinProb(strengthA, strengthB, upset) {
+    return 1 / (1 + Math.exp(-(strengthA - strengthB) / upset));
+  }
+
+  function bo3WinProb(p) {
+    return p * p * (3 - 2 * p);
+  }
+
+  function buchholz(teamId, state) {
+    return state[teamId].opponents.reduce((sum, opp) => sum + (state[opp].wins - state[opp].losses), 0);
+  }
+
+  function seedGroup(groupIds, state) {
+    return groupIds.slice().sort((a, b) => {
+      const db = buchholz(b, state) - buchholz(a, state);
+      if (db !== 0) return db;
+      return state[a].seed - state[b].seed;
+    });
+  }
+
+  function pairGroup(sorted, hasPlayed) {
+    const half = sorted.length / 2;
+    const top = sorted.slice(0, half);
+    const bottom = sorted.slice(half);
+    const used = new Array(bottom.length).fill(false);
+    const result = [];
+
+    // Busca em profundidade por um pareamento sem revanche (metade de cima x metade de baixo).
+    function dfs(k) {
+      if (k === half) return true;
+      const a = top[k];
+      for (let bi = 0; bi < bottom.length; bi++) {
+        if (used[bi] || hasPlayed(a, bottom[bi])) continue;
+        used[bi] = true;
+        result.push([a, bottom[bi]]);
+        if (dfs(k + 1)) return true;
+        used[bi] = false;
+        result.pop();
+      }
+      return false;
+    }
+    if (dfs(0)) return result;
+
+    // Último recurso: nenhum pareamento sem revanche existe -> permite revanche (exceção extrema).
+    const fallback = [];
+    const pool = bottom.slice();
+    for (let k = 0; k < half; k++) fallback.push([top[k], pool.shift()]);
+    return fallback;
+  }
+
+  function pairKey(a, b) {
+    return a < b ? a + '-' + b : b + '-' + a;
+  }
+
+  function buildState(teams, results) {
+    const state = {};
+    for (const t of teams) state[t.id] = { seed: t.seed, wins: 0, losses: 0, opponents: [] };
+    for (const m of results) {
+      const loser = m.winner === m.a ? m.b : m.a;
+      state[m.winner].wins++;
+      state[loser].losses++;
+      state[m.a].opponents.push(m.b);
+      state[m.b].opponents.push(m.a);
+    }
+    return state;
+  }
+
+  // Pareamentos da próxima rodada (todos os grupos ativos) dado os resultados já conhecidos.
+  function nextRoundPairings(teams, results) {
+    const state = buildState(teams, results);
+    const played = new Set(results.map((m) => pairKey(m.a, m.b)));
+    const hasPlayed = (a, b) => played.has(pairKey(a, b));
+    const active = teams.map((t) => t.id).filter((id) => state[id].wins < 3 && state[id].losses < 3);
+
+    const groups = new Map();
+    for (const id of active) {
+      const k = state[id].wins + '-' + state[id].losses;
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(id);
+    }
+    // Ordena os grupos por record (mais vitórias primeiro) para ordem de rodada estável.
+    const keys = [...groups.keys()].sort((x, y) => {
+      const [xw] = x.split('-').map(Number);
+      const [yw] = y.split('-').map(Number);
+      return yw - xw;
+    });
+    const pairs = [];
+    for (const k of keys) {
+      for (const [a, b] of pairGroup(seedGroup(groups.get(k), state), hasPlayed)) pairs.push([a, b]);
+    }
+    return pairs;
+  }
+
+  function simulateStage(teams, opts) {
+    const resolve = opts.resolve;
+    const locked = opts.locked || new Map();
+    const results = [];
+    const matchups = [];
+
+    let pairs = nextRoundPairings(teams, results);
+    while (pairs.length > 0) {
+      const state = buildState(teams, results);
+      for (const [a, b] of pairs) {
+        const isBo3 = state[a].wins === 2 || state[a].losses === 2 || state[b].wins === 2 || state[b].losses === 2;
+        const forced = locked.get(pairKey(a, b));
+        const winner = forced !== undefined ? forced : resolve(a, b, isBo3);
+        results.push({ a, b, winner });
+        matchups.push([a, b]);
+      }
+      pairs = nextRoundPairings(teams, results);
+    }
+
+    const finalState = buildState(teams, results);
+    const standings = new Map();
+    for (const t of teams) {
+      const s = finalState[t.id];
+      standings.set(t.id, { wins: s.wins, losses: s.losses, result: s.wins === 3 ? 'advance' : 'eliminate' });
+    }
+    return { matchups, standings };
+  }
+
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a |= 0;
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function runMonteCarlo(teams, opts) {
+    const N = opts.N;
+    const upset = opts.upset;
+    const locked = opts.locked || new Map();
+    const probOverride = opts.probOverride || new Map();
+    const rng = mulberry32(opts.seed >>> 0);
+    const n = teams.length;
+    const index = new Map(teams.map((t, i) => [t.id, i]));
+    const strength = new Map(teams.map((t) => [t.id, t.strength]));
+
+    const meet = Array.from({ length: n }, () => new Array(n).fill(0));
+    const adv = new Map(teams.map((t) => [t.id, 0]));
+    const z30 = new Map(teams.map((t) => [t.id, 0]));
+    const z03 = new Map(teams.map((t) => [t.id, 0]));
+
+    const resolve = (a, b, isBo3) => {
+      let pA;
+      const ov = probOverride.get(pairKey(a, b));
+      if (ov !== undefined) pA = a < b ? ov : 1 - ov;
+      else pA = mapWinProb(strength.get(a), strength.get(b), upset);
+      if (isBo3) pA = bo3WinProb(pA);
+      return rng() < pA ? a : b;
+    };
+
+    for (let s = 0; s < N; s++) {
+      const { matchups, standings } = simulateStage(teams, { resolve, locked });
+      const seen = new Set();
+      for (const [a, b] of matchups) {
+        const key = pairKey(a, b);
+        if (seen.has(key)) continue; // conta "se enfrentaram" uma vez por simulação
+        seen.add(key);
+        const i = index.get(a);
+        const j = index.get(b);
+        meet[i][j]++;
+        meet[j][i]++;
+      }
+      for (const [id, st] of standings) {
+        if (st.result === 'advance') adv.set(id, adv.get(id) + 1);
+        if (st.wins === 3 && st.losses === 0) z30.set(id, z30.get(id) + 1);
+        if (st.losses === 3 && st.wins === 0) z03.set(id, z03.get(id) + 1);
+      }
+    }
+
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) meet[i][j] /= N;
+    const div = (m) => new Map([...m].map(([k, v]) => [k, v / N]));
+    return { meetProb: meet, advanceProb: div(adv), threeZero: div(z30), zeroThree: div(z03), n: N };
+  }
+
+  const api = { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo };
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.SwissEngine = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script>
+const E = globalThis.SwissEngine;
+const DEFAULTS = [
+  'NIP','PARIVISION','Heroic','FaZe','Liquid','Eternal Fire','100 Thieves','9z',
+  'M80','DEND','Imperial','Wildcard','BC.Game','FlyQuest','CW','LVG'
+];
+
+// estado
+let teams = DEFAULTS.map((name, i) => ({ id: i + 1, seed: i + 1, name, strength: 1600 - i * 45 }));
+let lockedMatches = [];      // [{a,b,winner}]
+let roundPicks = {};         // pairKey -> winnerId (rodada atual, ainda não confirmada)
+let overrides = [];          // [{a,b,p}]
+let last = null;             // último resultado do MC
+
+const $ = (id) => document.getElementById(id);
+const nameOf = (id) => teams.find((t) => t.id === id).name;
+
+function renderTeams() {
+  $('teamRows').innerHTML = teams.map((t, i) => `
+    <tr>
+      <td class="seedcol">${t.seed}</td>
+      <td><input class="name" data-i="${i}" data-f="name" value="${t.name}"></td>
+      <td><input class="num" data-i="${i}" data-f="strength" type="number" value="${t.strength}"></td>
+    </tr>`).join('');
+  $('teamRows').querySelectorAll('input').forEach((inp) => {
+    inp.addEventListener('change', (e) => {
+      const i = +e.target.dataset.i, f = e.target.dataset.f;
+      teams[i][f] = f === 'strength' ? +e.target.value : e.target.value;
+      if (f === 'name') { renderOverrideSelects(); renderLive(); }
+    });
+  });
+  renderOverrideSelects();
+}
+
+function renderOverrideSelects() {
+  const opts = teams.map((t) => `<option value="${t.id}">${t.name}</option>`).join('');
+  $('ovA').innerHTML = opts; $('ovB').innerHTML = opts; $('ovB').selectedIndex = 1;
+}
+
+function lockedMap() {
+  return new Map(lockedMatches.map((m) => [E.pairKey(m.a, m.b), m.winner]));
+}
+function overrideMap() {
+  return new Map(overrides.map((o) => [E.pairKey(o.a, o.b), o.a < o.b ? o.p : 1 - o.p]));
+}
+
+function run() {
+  $('status').textContent = 'rodando…';
+  $('run').disabled = true;
+  setTimeout(() => {
+    const t0 = performance.now();
+    last = E.runMonteCarlo(teams, {
+      N: +$('N').value, upset: +$('upset').value,
+      locked: lockedMap(), seed: +$('rngseed').value >>> 0, probOverride: overrideMap(),
+    });
+    renderHeat();
+    $('status').textContent = `${last.n.toLocaleString('pt-BR')} sims · ${Math.round(performance.now() - t0)} ms`;
+    $('run').disabled = false;
+  }, 10);
+}
+
+function color(p) {
+  if (p <= 0) return null;
+  const h = 210, l = 14 + p * 42; // azul, mais claro = mais provável
+  return `hsl(${h} 70% ${l}%)`;
+}
+
+function renderHeat() {
+  const n = teams.length, m = last.meetProb;
+  let html = '<table class="heat"><thead><tr><th></th>';
+  for (const t of teams) html += `<th class="rot"><div>${t.seed}</div></th>`;
+  html += '</tr></thead><tbody>';
+  for (let i = 0; i < n; i++) {
+    html += `<tr><th class="rowlab" data-i="${i}">${teams[i].seed}. ${teams[i].name}</th>`;
+    for (let j = 0; j < n; j++) {
+      if (i === j) { html += '<td class="diag">·</td>'; continue; }
+      const p = m[i][j];
+      if (p <= 0) { html += '<td class="zero" title="não se enfrentam em nenhum cenário"></td>'; continue; }
+      const pct = Math.round(p * 100);
+      html += `<td style="background:${color(p)}" title="${teams[i].name} × ${teams[j].name}: ${(p * 100).toFixed(1)}%">${pct}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  $('heat').innerHTML = html;
+  $('heat').querySelectorAll('.rowlab').forEach((el) =>
+    el.addEventListener('click', () => renderDetail(+el.dataset.i)));
+}
+
+function renderDetail(i) {
+  const team = teams[i];
+  const opp = teams.map((t, j) => ({ t, p: last.meetProb[i][j] }))
+    .filter((x) => x.t.id !== team.id && x.p > 0).sort((a, b) => b.p - a.p);
+  const adv = last.advanceProb.get(team.id), z30 = last.threeZero.get(team.id), z03 = last.zeroThree.get(team.id);
+  $('detailTitle').textContent = `${team.seed}. ${team.name}`;
+  $('detail').innerHTML = `
+    <div class="row" style="gap:16px;margin-bottom:8px">
+      <span class="pill adv">avança ${(adv * 100).toFixed(1)}%</span>
+      <span class="pill">3-0 ${(z30 * 100).toFixed(1)}%</span>
+      <span class="pill elim">0-3 ${(z03 * 100).toFixed(1)}%</span>
+    </div>
+    <table class="teamstats"><tbody>${opp.map((x) =>
+      `<tr><td>${x.t.seed}. ${x.t.name}</td><td class="mono" style="text-align:right">${(x.p * 100).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderLive() {
+  const pairs = E.nextRoundPairings(teams, lockedMatches);
+  if (pairs.length === 0) { $('live').innerHTML = '<span class="muted">Stage encerrado — todos definidos.</span>'; return; }
+  const state = {}; // só p/ marcar Bo3
+  $('live').innerHTML = pairs.map(([a, b]) => {
+    const key = E.pairKey(a, b);
+    const sel = roundPicks[key];
+    const bo3 = isDecisive(a, b);
+    return `<div class="match">
+      <button class="pick ${sel === a ? 'sel' : ''}" data-k="${key}" data-w="${a}">${nameOf(a)}</button>
+      <span class="vs">×</span>
+      <button class="pick ${sel === b ? 'sel' : ''}" data-k="${key}" data-w="${b}">${nameOf(b)}</button>
+      ${bo3 ? '<span class="bo3">MD3</span>' : ''}
+    </div>`;
+  }).join('');
+  $('live').querySelectorAll('.pick').forEach((btn) =>
+    btn.addEventListener('click', () => { roundPicks[btn.dataset.k] = +btn.dataset.w; renderLive(); }));
+  renderLocked();
+}
+
+function isDecisive(a, b) {
+  const st = {}; teams.forEach((t) => st[t.id] = { w: 0, l: 0 });
+  for (const m of lockedMatches) { const loser = m.winner === m.a ? m.b : m.a; st[m.winner].w++; st[loser].l++; }
+  return st[a].w === 2 || st[a].l === 2 || st[b].w === 2 || st[b].l === 2;
+}
+
+function renderLocked() {
+  $('lockedList').innerHTML = lockedMatches.length
+    ? 'Travados: ' + lockedMatches.map((m) => `${nameOf(m.winner)}✓ v ${nameOf(m.winner === m.a ? m.b : m.a)}`).join(' · ')
+    : '';
+}
+
+function confirmRound() {
+  const pairs = E.nextRoundPairings(teams, lockedMatches);
+  for (const [a, b] of pairs) {
+    const w = roundPicks[E.pairKey(a, b)];
+    if (w === undefined) { alert('Escolha o vencedor de todos os confrontos da rodada antes de confirmar.'); return; }
+    lockedMatches.push({ a, b, winner: w });
+  }
+  roundPicks = {};
+  renderLive();
+  run();
+}
+
+function renderOverrides() {
+  $('ovList').innerHTML = overrides.map((o, i) =>
+    `<div class="row"><span>${nameOf(o.a)} bate ${nameOf(o.b)} = ${o.p}</span>
+     <button class="ghost" data-i="${i}" style="padding:1px 7px">×</button></div>`).join('');
+  $('ovList').querySelectorAll('button').forEach((b) =>
+    b.addEventListener('click', () => { overrides.splice(+b.dataset.i, 1); renderOverrides(); run(); }));
+}
+
+$('run').addEventListener('click', run);
+$('upset').addEventListener('input', () => $('upsetVal').textContent = $('upset').value);
+$('confirmRound').addEventListener('click', confirmRound);
+$('resetResults').addEventListener('click', () => { lockedMatches = []; roundPicks = {}; renderLive(); run(); });
+$('ovAdd').addEventListener('click', () => {
+  const a = +$('ovA').value, b = +$('ovB').value;
+  if (a === b) return;
+  overrides = overrides.filter((o) => E.pairKey(o.a, o.b) !== E.pairKey(a, b));
+  overrides.push({ a, b, p: Math.max(0, Math.min(1, +$('ovP').value)) });
+  renderOverrides(); run();
+});
+
+$('upsetVal').textContent = $('upset').value;
+renderTeams();
+renderLive();
+run();
+</script>
+</body>
+</html>
