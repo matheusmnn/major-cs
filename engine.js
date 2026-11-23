@@ -202,7 +202,23 @@
     return { meetProb: meet, advanceProb: div(adv), threeZero: div(z30), zeroThree: div(z03), n: N };
   }
 
-  const api = { mapWinProb, bo3WinProb, blendH2H, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo };
+  // Ajuste de contexto (opcional, sob toggle): calendário recente + tiers de evento.
+  // Empurrão modesto sobre a força base (pontos Valve). Ajuste as constantes aqui.
+  const CTX = { refRank: 30, kSos: 1.5, sosCap: 40, tierPts: { S: 12, A: 8, B: 4, C: 2 }, tierCap: 40, totalCap: 60 };
+
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  function contextDelta(stat, cfg) {
+    const c = cfg || CTX;
+    const r = stat && stat.avgOppRank;
+    const sos = typeof r === 'number' && Number.isFinite(r) ? clamp((c.refRank - r) * c.kSos, -c.sosCap, c.sosCap) : 0;
+    const tiers = (stat && stat.tiers) || {};
+    let t = 0;
+    for (const k in c.tierPts) t += (tiers[k] || 0) * c.tierPts[k];
+    return clamp(sos + clamp(t, 0, c.tierCap), -c.totalCap, c.totalCap);
+  }
+
+  const api = { mapWinProb, bo3WinProb, blendH2H, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo, contextDelta, CTX };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SwissEngine = api;

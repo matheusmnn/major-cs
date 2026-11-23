@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { mapWinProb, bo3WinProb, seedGroup, pairGroup, simulateStage, pairKey, mulberry32, runMonteCarlo, nextRoundPairings, blendH2H } = require('../engine.js');
+const { mapWinProb, bo3WinProb, seedGroup, pairGroup, simulateStage, pairKey, mulberry32, runMonteCarlo, nextRoundPairings, blendH2H, contextDelta } = require('../engine.js');
+const E = require('../engine.js');
 
 const teams16 = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, seed: i + 1, strength: 1600 - i * 40 }));
 
@@ -154,4 +155,22 @@ test('nextRoundPairings: stage encerrado => []', () => {
   const r = simulateStage(teams16, { resolve: (a, b) => Math.min(a, b), locked: new Map() });
   const allResults = r.matchups.map(([a, b]) => ({ a, b, winner: Math.min(a, b) }));
   assert.deepEqual(nextRoundPairings(teams16, allResults), []);
+});
+
+test('contextDelta: avgOppRank = refRank e sem tiers => 0', () => {
+  assert.equal(contextDelta({ avgOppRank: E.CTX.refRank, tiers: {} }), 0);
+});
+test('contextDelta: calendário forte (rank baixo) > 0; fraco (rank alto) < 0', () => {
+  assert.ok(contextDelta({ avgOppRank: 10, tiers: {} }) > 0);
+  assert.ok(contextDelta({ avgOppRank: 80, tiers: {} }) < 0);
+});
+test('contextDelta: tiers somam positivo e respeitam o teto total', () => {
+  const a = contextDelta({ avgOppRank: 30, tiers: { S: 1 } });
+  assert.ok(a > 0);
+  assert.ok(contextDelta({ avgOppRank: 1, tiers: { S: 9, A: 9 } }) <= E.CTX.totalCap);
+});
+test('contextDelta: stat/campos ausentes => 0, sem NaN', () => {
+  assert.equal(contextDelta(undefined), 0);
+  assert.equal(contextDelta({ tiers: { Z: 5 } }), 0);
+  assert.ok(!Number.isNaN(contextDelta({ avgOppRank: NaN, tiers: {} })));
 });
