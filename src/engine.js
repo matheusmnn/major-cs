@@ -202,20 +202,36 @@
     return { meetProb: meet, advanceProb: div(adv), threeZero: div(z30), zeroThree: div(z03), n: N };
   }
 
-  // Ajuste de contexto (opcional, sob toggle): calendário recente + tiers de evento.
-  // Empurrão modesto sobre a força base (pontos Valve). Ajuste as constantes aqui.
-  const CTX = { refRank: 30, kSos: 1.5, sosCap: 40, tierPts: { S: 12, A: 8, B: 4, C: 2 }, tierCap: 40, totalCap: 60 };
+  // Ajuste de contexto (opcional, sob toggle): calendário recente (SoS) + retrospecto por evento.
+  // Empurrão sobre a força base (pontos Valve). Ajuste as constantes aqui.
+  // form[tier]: bem = colocação <= bem; mediano = <= mid; pior = o resto. pts = pontos de cada faixa.
+  // Evento sem tier (ou tier desconhecido) conta como C (fraco): pune mais ir mal, premia pouco vencer.
+  const CTX = {
+    refRank: 30, kSos: 1.5, sosCap: 40, formCap: 40, totalCap: 60,
+    form: {
+      S: { bem: 4, mid: 12, pts: { bem: 18, mid: 4, bad: -6 } },
+      A: { bem: 2, mid: 8, pts: { bem: 12, mid: 1, bad: -7 } },
+      B: { bem: 2, mid: 6, pts: { bem: 5, mid: 0, bad: -8 } },
+      C: { bem: 1, mid: 5, pts: { bem: 3, mid: 0, bad: -10 } },
+    },
+  };
 
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  // Melhor (menor) posição de uma colocação "5-6th" / "13-16th" / "1st" -> número; sem número -> null.
+  const bestPlace = (s) => { const m = String(s == null ? '' : s).match(/\d+/); return m ? +m[0] : null; };
 
   function contextDelta(stat, cfg) {
     const c = cfg || CTX;
     const r = stat && stat.avgOppRank;
     const sos = typeof r === 'number' && Number.isFinite(r) ? clamp((c.refRank - r) * c.kSos, -c.sosCap, c.sosCap) : 0;
-    const tiers = (stat && stat.tiers) || {};
-    let t = 0;
-    for (const k in c.tierPts) t += (tiers[k] || 0) * c.tierPts[k];
-    return clamp(sos + clamp(t, 0, c.tierCap), -c.totalCap, c.totalCap);
+    let f = 0;
+    for (const e of (stat && stat.events) || []) {
+      const row = c.form[e && e.tier] || c.form.C;
+      const p = bestPlace(e && e.placement);
+      if (p == null) continue; // sem colocação legível: ignora o evento
+      f += p <= row.bem ? row.pts.bem : p <= row.mid ? row.pts.mid : row.pts.bad;
+    }
+    return clamp(sos + clamp(f, -c.formCap, c.formCap), -c.totalCap, c.totalCap);
   }
 
   const api = { mapWinProb, bo3WinProb, blendH2H, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo, contextDelta, CTX };

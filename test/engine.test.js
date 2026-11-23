@@ -157,20 +157,35 @@ test('nextRoundPairings: stage encerrado => []', () => {
   assert.deepEqual(nextRoundPairings(teams16, allResults), []);
 });
 
-test('contextDelta: avgOppRank = refRank e sem tiers => 0', () => {
-  assert.equal(contextDelta({ avgOppRank: E.CTX.refRank, tiers: {} }), 0);
+test('contextDelta: avgOppRank = refRank e sem eventos => 0', () => {
+  assert.equal(contextDelta({ avgOppRank: E.CTX.refRank, events: [] }), 0);
 });
 test('contextDelta: calendário forte (rank baixo) > 0; fraco (rank alto) < 0', () => {
-  assert.ok(contextDelta({ avgOppRank: 10, tiers: {} }) > 0);
-  assert.ok(contextDelta({ avgOppRank: 80, tiers: {} }) < 0);
+  assert.ok(contextDelta({ avgOppRank: 10, events: [] }) > 0);
+  assert.ok(contextDelta({ avgOppRank: 80, events: [] }) < 0);
 });
-test('contextDelta: tiers somam positivo e respeitam o teto total', () => {
-  const a = contextDelta({ avgOppRank: 30, tiers: { S: 1 } });
-  assert.ok(a > 0);
-  assert.ok(contextDelta({ avgOppRank: 1, tiers: { S: 9, A: 9 } }) <= E.CTX.totalCap);
+test('contextDelta: retrospecto por evento (placement x tier)', () => {
+  const at = E.CTX.refRank; // neutraliza o SoS para isolar a forma
+  // mal em evento fraco penaliza; mediano em fraco neutro; mediano em forte leve+; bem em top muito bom
+  assert.ok(contextDelta({ avgOppRank: at, events: [{ tier: 'C', placement: '9-12th' }] }) < 0);
+  assert.equal(contextDelta({ avgOppRank: at, events: [{ tier: 'C', placement: '3rd' }] }), 0);
+  assert.ok(contextDelta({ avgOppRank: at, events: [{ tier: 'S', placement: '7-8th' }] }) > 0);
+  const top = contextDelta({ avgOppRank: at, events: [{ tier: 'S', placement: '1st' }] });
+  const weakWin = contextDelta({ avgOppRank: at, events: [{ tier: 'C', placement: '1st' }] });
+  assert.ok(top > weakWin && top > 0); // vencer top >> vencer fraco
+  // mal no S pune de leve (menos que mal no fraco)
+  assert.ok(contextDelta({ avgOppRank: at, events: [{ tier: 'S', placement: '15-16th' }] }) < 0);
+  assert.ok(contextDelta({ avgOppRank: at, events: [{ tier: 'S', placement: '15-16th' }] })
+    > contextDelta({ avgOppRank: at, events: [{ tier: 'C', placement: '9-12th' }] }));
+});
+test('contextDelta: respeita o teto total e trata sem tier como C', () => {
+  const many = Array.from({ length: 12 }, () => ({ tier: 'S', placement: '1st' }));
+  assert.ok(contextDelta({ avgOppRank: 1, events: many }) <= E.CTX.totalCap);
+  // evento sem tier é tratado como fraco (C): ir mal pune
+  assert.ok(contextDelta({ avgOppRank: E.CTX.refRank, events: [{ tier: null, placement: '9-12th' }] }) < 0);
 });
 test('contextDelta: stat/campos ausentes => 0, sem NaN', () => {
   assert.equal(contextDelta(undefined), 0);
-  assert.equal(contextDelta({ tiers: { Z: 5 } }), 0);
-  assert.ok(!Number.isNaN(contextDelta({ avgOppRank: NaN, tiers: {} })));
+  assert.equal(contextDelta({ events: [{ placement: 'TBD' }] }), 0); // sem colocação legível
+  assert.ok(!Number.isNaN(contextDelta({ avgOppRank: NaN, events: [] })));
 });
