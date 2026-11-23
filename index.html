@@ -85,6 +85,11 @@
   .btn.ghost { background: transparent; border: 1px solid var(--cy); color: var(--cy); font-weight: 600; }
   .btn.ghost.dim { border-color: var(--line); color: var(--dim); }
   .btn.ghost:hover:not(:disabled) { filter: none; background: rgba(77,227,255,.06); }
+  @keyframes btnPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(77,227,255,.5); } 50% { box-shadow: 0 0 0 6px rgba(77,227,255,0); } }
+  .btn.pulse { animation: btnPulse 1.6s infinite; }
+  .hint { padding: 44px 20px; text-align: center; color: var(--dim);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .04em; }
+  .hint b { color: var(--cy); }
   .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
   /* live */
@@ -349,6 +354,7 @@ function overrideMap() {
 }
 
 function run() {
+  $('run').classList.remove('pulse');
   $('status').textContent = 'rodando…';
   $('run').disabled = true;
   setTimeout(() => {
@@ -510,6 +516,10 @@ setUpsetLabel();
 applyData();
 renderTeams();
 renderLive();
+// Estado inicial: a simulação só roda no botão, então avisa a pessoa.
+$('heat').innerHTML = '<div class="hint">Clique em <b>► RODAR</b> para simular a fase suíça e ver os confrontos.</div>';
+$('status').textContent = 'clique em ► RODAR';
+$('run').classList.add('pulse');
 // Carrega o contexto em segundo plano (não roda; a simulação só roda no botão Rodar).
 // Injetado (dist/file://) usa direto; servido (Pages/http) busca o stats.json.
 if (STATS_RAW) applyStats(STATS_RAW);
