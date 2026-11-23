@@ -34,7 +34,58 @@
     return pairs;
   }
 
-  const api = { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup };
+  function pairKey(a, b) {
+    return a < b ? a + '-' + b : b + '-' + a;
+  }
+
+  function simulateStage(teams, opts) {
+    const resolve = opts.resolve;
+    const locked = opts.locked || new Map();
+    const state = {};
+    for (const t of teams) state[t.id] = { seed: t.seed, wins: 0, losses: 0, opponents: [] };
+
+    const played = new Set();
+    const hasPlayed = (a, b) => played.has(pairKey(a, b));
+    const matchups = [];
+
+    const active = () => teams.map((t) => t.id).filter((id) => state[id].wins < 3 && state[id].losses < 3);
+
+    let act = active();
+    while (act.length > 0) {
+      const groups = new Map();
+      for (const id of act) {
+        const k = state[id].wins + '-' + state[id].losses;
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(id);
+      }
+      const roundPairs = [];
+      for (const ids of groups.values()) {
+        for (const [a, b] of pairGroup(seedGroup(ids, state), hasPlayed)) roundPairs.push([a, b]);
+      }
+      for (const [a, b] of roundPairs) {
+        const isBo3 = state[a].wins === 2 || state[a].losses === 2 || state[b].wins === 2 || state[b].losses === 2;
+        const forced = locked.get(pairKey(a, b));
+        const winner = forced !== undefined ? forced : resolve(a, b, isBo3);
+        const loser = winner === a ? b : a;
+        state[winner].wins++;
+        state[loser].losses++;
+        state[a].opponents.push(b);
+        state[b].opponents.push(a);
+        played.add(pairKey(a, b));
+        matchups.push([a, b]);
+      }
+      act = active();
+    }
+
+    const standings = new Map();
+    for (const t of teams) {
+      const s = state[t.id];
+      standings.set(t.id, { wins: s.wins, losses: s.losses, result: s.wins === 3 ? 'advance' : 'eliminate' });
+    }
+    return { matchups, standings };
+  }
+
+  const api = { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup, pairKey, simulateStage };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SwissEngine = api;

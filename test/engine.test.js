@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup } = require('../engine.js');
+const { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup, simulateStage, pairKey } = require('../engine.js');
+
+const teams16 = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, seed: i + 1, strength: 1600 - i * 40 }));
 
 test('mapWinProb: força igual => 0.5', () => {
   assert.equal(mapWinProb(1000, 1000, 400), 0.5);
@@ -65,4 +67,37 @@ test('pairGroup: evita revanche deslocando o par', () => {
   const hp = (a, b) => (a === 10 && b === 30) || (a === 30 && b === 10);
   const pairs = pairGroup([10, 20, 30, 40], hp);
   assert.ok(!pairs.some(([a, b]) => (a === 10 && b === 30) || (a === 30 && b === 10)));
+});
+
+// --- Task 3: simulação de stage ---
+
+test('simulateStage: resolve determinístico (sempre vence o de menor id) => 8 avançam, 8 eliminam', () => {
+  const r = simulateStage(teams16, { resolve: (a, b) => Math.min(a, b), locked: new Map() });
+  const adv = [...r.standings.values()].filter((s) => s.result === 'advance');
+  const elim = [...r.standings.values()].filter((s) => s.result === 'eliminate');
+  assert.equal(adv.length, 8);
+  assert.equal(elim.length, 8);
+});
+
+test('simulateStage: ninguém joga duas vezes com o mesmo', () => {
+  const r = simulateStage(teams16, { resolve: (a, b) => Math.min(a, b), locked: new Map() });
+  const seen = new Set();
+  for (const [a, b] of r.matchups) {
+    const key = pairKey(a, b);
+    assert.ok(!seen.has(key), `par repetido: ${key}`);
+    seen.add(key);
+  }
+});
+
+test('simulateStage: resultado travado é respeitado', () => {
+  const locked = new Map([[pairKey(1, 9), 9]]); // zebra fixada
+  const r = simulateStage(teams16, { resolve: (a, b) => Math.min(a, b), locked });
+  assert.ok(r.standings.get(9).wins >= 1);
+});
+
+test('simulateStage: todo time termina em 3 vitórias ou 3 derrotas', () => {
+  const r = simulateStage(teams16, { resolve: (a, b) => Math.min(a, b), locked: new Map() });
+  for (const s of r.standings.values()) {
+    assert.ok(s.wins === 3 || s.losses === 3, `record inesperado ${s.wins}-${s.losses}`);
+  }
 });
