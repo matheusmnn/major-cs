@@ -64,6 +64,11 @@
     background: linear-gradient(90deg, hsl(44 36% 17%), hsl(44 85% 60%)); }
   .pill { display: inline-block; padding: 2px 9px; border-radius: 20px; background: var(--panel2);
     border: 1px solid var(--line); color: var(--muted); font-size: 12px; font-weight: 500; }
+  .tier { display: inline-block; padding: 1px 6px; border-radius: 5px; background: var(--panel2);
+    border: 1px solid var(--line); color: var(--gold); font-size: 11px; font-weight: 600;
+    font-family: 'Chakra Petch', sans-serif; margin-right: 3px; }
+  .ctxrow { display: flex; align-items: center; gap: 8px; margin-top: 14px; color: var(--muted); font-size: 12px; }
+  .ctxrow input { width: auto; }
   /* live */
   .match { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
   .match .vs { color: var(--muted); font-size: 12px; }
@@ -114,6 +119,7 @@
           <input id="upset" type="range" min="0" max="100" step="1" value="50">
           <label>Semente do sorteio (repete o mesmo resultado)</label>
           <input id="rngseed" type="number" value="1" min="0">
+          <label class="ctxrow"><input id="ctx" type="checkbox"> Considerar contexto (calendário + eventos)</label>
           <div class="row" style="margin-top:16px">
             <button id="run">Rodar</button>
             <span id="status" class="muted"></span>
@@ -181,6 +187,8 @@ let overrides = [];          // [{a,b,p}]
 let last = null;             // último resultado do MC
 let sortKey = 'advance';     // coluna de ordenação do ranking
 const DATA = (typeof window !== 'undefined' && window.__DATA__) || null;
+const STATS_RAW = (typeof window !== 'undefined' && window.__STATS__) || null;
+const STATS = new Map(); // norm(nome) -> { avgOppRank, tiers, ... }
 
 const $ = (id) => document.getElementById(id);
 const nameOf = (id) => teams.find((t) => t.id === id).name;
@@ -194,6 +202,12 @@ function applyData() {
     const t = teams.find((x) => norm(x.name) === norm(d.name));
     if (t && typeof d.force === 'number') t.strength = d.force;
   }
+}
+
+// Casa o stats.json (por nome) em STATS, se houver.
+function applyStats() {
+  if (!STATS_RAW || !STATS_RAW.teams) return;
+  for (const [name, s] of Object.entries(STATS_RAW.teams)) STATS.set(norm(name), s);
 }
 
 // Knob de zebra 0..100 -> escala interna. 0 = favorito domina; 100 = quase moeda.
@@ -245,7 +259,12 @@ function run() {
   $('run').disabled = true;
   setTimeout(() => {
     const t0 = performance.now();
-    last = E.runMonteCarlo(teams, {
+    const useCtx = $('ctx').checked;
+    const effTeams = teams.map((t) => ({
+      ...t,
+      strength: t.strength + (useCtx ? E.contextDelta(STATS.get(norm(t.name))) : 0),
+    }));
+    last = E.runMonteCarlo(effTeams, {
       N: +$('N').value, upset: upsetScale(+$('upset').value),
       locked: lockedMap(), seed: +$('rngseed').value >>> 0, probOverride: overrideMap(),
       h2h: h2hMap(), k: 4,
@@ -290,9 +309,17 @@ function renderRanking() {
 
   const th = (key, label) => `<th class="sortable ${sortKey === key ? 'active' : ''}" data-k="${key}">${label}</th>`;
   const cell = (v, cls) => `<td class="bar ${cls}" style="--v:${(v * 100).toFixed(0)}%">${(v * 100).toFixed(1)}</td>`;
-  let html = `<thead><tr><th class="l">Time</th>${th('advance', 'avança')}${th('z30', '3-0')}${th('z03', '0-3')}</tr></thead><tbody>`;
-  html += rows.map((r) =>
-    `<tr><td class="l"><s>${r.t.seed}</s>${r.t.name}</td>${cell(r.adv, 'bar-adv')}${cell(r.z30, 'bar-z30')}${cell(r.z03, 'bar-z03')}</tr>`).join('');
+  const statOf = (name) => STATS.get(norm(name));
+  const avgCell = (s) => `<td>${s ? Math.round(s.avgOppRank) : '—'}</td>`;
+  const tierCell = (s) => {
+    const sel = s ? ['S', 'A', 'B', 'C'].filter((k) => s.tiers[k] > 0) : [];
+    return `<td class="l">${sel.length ? sel.map((k) => `<span class="tier">${k}</span>`).join('') : '<span class="muted">—</span>'}</td>`;
+  };
+  let html = `<thead><tr><th class="l">Time</th><th>Média adv.</th><th class="l">Tiers</th>${th('advance', 'avança')}${th('z30', '3-0')}${th('z03', '0-3')}</tr></thead><tbody>`;
+  html += rows.map((r) => {
+    const s = statOf(r.t.name);
+    return `<tr><td class="l"><s>${r.t.seed}</s>${r.t.name}</td>${avgCell(s)}${tierCell(s)}${cell(r.adv, 'bar-adv')}${cell(r.z30, 'bar-z30')}${cell(r.z03, 'bar-z03')}</tr>`;
+  }).join('');
   html += '</tbody>';
   $('rankTable').innerHTML = html;
   $('rankTable').querySelectorAll('.sortable').forEach((el) =>
@@ -369,6 +396,7 @@ function renderOverrides() {
 $('run').addEventListener('click', run);
 $('upset').addEventListener('input', () => $('upsetVal').textContent = $('upset').value);
 $('upset').addEventListener('change', run);
+$('ctx').addEventListener('change', run);
 $('confirmRound').addEventListener('click', confirmRound);
 $('resetResults').addEventListener('click', () => { lockedMatches = []; roundPicks = {}; renderLive(); run(); });
 $('ovAdd').addEventListener('click', () => {
@@ -381,6 +409,7 @@ $('ovAdd').addEventListener('click', () => {
 
 $('upsetVal').textContent = $('upset').value;
 applyData();
+applyStats();
 renderTeams();
 renderLive();
 run();

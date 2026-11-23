@@ -16,7 +16,16 @@ if (fs.existsSync(dataPath)) {
   console.log('data.json injetado (' + (data.teams ? data.teams.length : 0) + ' times)');
 }
 
-const out = html.replace('<script src="engine.js"></script>', dataScript + '<script>\n' + engine + '\n</script>');
+// Injeta stats.json (se existir) como window.__STATS__ — contexto de calendário/tiers.
+let statsScript = '';
+const statsPath = path.join(root, 'stats.json');
+if (fs.existsSync(statsPath)) {
+  const stats = JSON.parse(fs.readFileSync(statsPath, 'utf8')); // valida o JSON
+  statsScript = '<script>window.__STATS__=' + JSON.stringify(stats) + ';</script>\n';
+  console.log('stats.json injetado (' + Object.keys(stats.teams || {}).length + ' times)');
+}
+
+const out = html.replace('<script src="engine.js"></script>', dataScript + statsScript + '<script>\n' + engine + '\n</script>');
 if (out.includes('src="engine.js"')) throw new Error('falha ao inlinar engine.js');
 
 const distDir = path.join(root, 'dist');
