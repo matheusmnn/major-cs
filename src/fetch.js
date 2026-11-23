@@ -9,7 +9,7 @@ const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 const MONTHS = 12;
 
 async function main() {
-  const names = JSON.parse(fs.readFileSync(path.join(__dirname, 'teams.json'), 'utf8'));
+  const names = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'teams.json'), 'utf8'));
   const wanted = new Set(names.map(norm));
 
   console.log('Buscando ranking mundial...');
@@ -45,8 +45,8 @@ async function main() {
   }
 
   const out = { generatedAt: new Date().toISOString(), teams, h2h: [...h2h.values()] };
-  fs.writeFileSync(path.join(__dirname, 'data.json'), JSON.stringify(out, null, 2));
-  console.log(`data.json: ${teams.length} times, ${out.h2h.length} confrontos H2H. Agora rode: node build.js`);
+  fs.writeFileSync(path.join(__dirname, '..', 'data', 'data.json'), JSON.stringify(out, null, 2));
+  console.log(`data.json: ${teams.length} times, ${out.h2h.length} confrontos H2H. Agora rode: node src/build.js`);
 }
 
 main().catch((e) => { console.error('Falhou:', e.message); process.exit(1); });

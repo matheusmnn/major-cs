@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { mapWinProb, bo3WinProb, seedGroup, pairGroup, simulateStage, pairKey, mulberry32, runMonteCarlo, nextRoundPairings, blendH2H, contextDelta } = require('../engine.js');
-const E = require('../engine.js');
+const { mapWinProb, bo3WinProb, seedGroup, pairGroup, simulateStage, pairKey, mulberry32, runMonteCarlo, nextRoundPairings, blendH2H, contextDelta } = require('../src/engine.js');
+const E = require('../src/engine.js');
 
 const teams16 = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, seed: i + 1, strength: 1600 - i * 40 }));
 

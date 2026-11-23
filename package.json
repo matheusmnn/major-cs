@@ -5,9 +5,9 @@
   "private": true,
   "scripts": {
     "test": "node --test",
-    "fetch": "node fetch.js",
-    "build": "node build.js",
-    "prepare-data": "node fetch.js && node build.js"
+    "fetch": "node src/fetch.js",
+    "build": "node src/build.js",
+    "prepare-data": "node src/fetch.js && node src/build.js"
   },
   "dependencies": {
     "hltv": "^3.5.0"

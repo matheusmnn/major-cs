@@ -9,7 +9,7 @@ const APP_TEAMS = [
   '100 Thieves', '9z', 'M80', 'DENDELE', 'Imperial', 'Wildcard', 'BC.Game', 'FlyQuest', 'CW', 'LVG',
 ].map(norm);
 
-const stats = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'stats.json'), 'utf8'));
+const stats = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'stats.json'), 'utf8'));
 
 test('stats.json: cobre exatamente os 16 times do app (por norm)', () => {
   const keys = Object.keys(stats.teams).map(norm);

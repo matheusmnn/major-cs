@@ -167,7 +167,7 @@
     </div>
   </div>
 
-<script src="engine.js"></script>
+<script src="src/engine.js"></script>
 <script>
 const E = globalThis.SwissEngine;
 // [nome, força] por seed. Força = pontos Valve do ranking HLTV (nov/2026). Edite conforme o major.
@@ -418,7 +418,7 @@ renderLive();
 // Carrega o contexto em segundo plano (não roda; a simulação só roda no botão Rodar).
 // Injetado (dist/file://) usa direto; servido (Pages/http) busca o stats.json.
 if (STATS_RAW) applyStats(STATS_RAW);
-else fetch('stats.json').then((r) => (r.ok ? r.json() : null)).then(applyStats).catch(() => {});
+else fetch('data/stats.json').then((r) => (r.ok ? r.json() : null)).then(applyStats).catch(() => {});
 </script>
 </body>
 </html>

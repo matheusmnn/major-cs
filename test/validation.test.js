@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const { simulateStage, pairKey } = require('../engine.js');
+const { simulateStage, pairKey } = require('../src/engine.js');
 
 // Normaliza uma lista de pares para comparação independente de ordem/direção.
 function normalize(pairs) {
