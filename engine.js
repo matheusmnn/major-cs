@@ -55,48 +55,68 @@
     return a < b ? a + '-' + b : b + '-' + a;
   }
 
+  function buildState(teams, results) {
+    const state = {};
+    for (const t of teams) state[t.id] = { seed: t.seed, wins: 0, losses: 0, opponents: [] };
+    for (const m of results) {
+      const loser = m.winner === m.a ? m.b : m.a;
+      state[m.winner].wins++;
+      state[loser].losses++;
+      state[m.a].opponents.push(m.b);
+      state[m.b].opponents.push(m.a);
+    }
+    return state;
+  }
+
+  // Pareamentos da próxima rodada (todos os grupos ativos) dado os resultados já conhecidos.
+  function nextRoundPairings(teams, results) {
+    const state = buildState(teams, results);
+    const played = new Set(results.map((m) => pairKey(m.a, m.b)));
+    const hasPlayed = (a, b) => played.has(pairKey(a, b));
+    const active = teams.map((t) => t.id).filter((id) => state[id].wins < 3 && state[id].losses < 3);
+
+    const groups = new Map();
+    for (const id of active) {
+      const k = state[id].wins + '-' + state[id].losses;
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(id);
+    }
+    // Ordena os grupos por record (mais vitórias primeiro) para ordem de rodada estável.
+    const keys = [...groups.keys()].sort((x, y) => {
+      const [xw] = x.split('-').map(Number);
+      const [yw] = y.split('-').map(Number);
+      return yw - xw;
+    });
+    const pairs = [];
+    for (const k of keys) {
+      for (const [a, b] of pairGroup(seedGroup(groups.get(k), state), hasPlayed)) pairs.push([a, b]);
+    }
+    return pairs;
+  }
+
   function simulateStage(teams, opts) {
     const resolve = opts.resolve;
     const locked = opts.locked || new Map();
-    const state = {};
-    for (const t of teams) state[t.id] = { seed: t.seed, wins: 0, losses: 0, opponents: [] };
-
-    const played = new Set();
-    const hasPlayed = (a, b) => played.has(pairKey(a, b));
+    const results = [];
     const matchups = [];
 
-    const active = () => teams.map((t) => t.id).filter((id) => state[id].wins < 3 && state[id].losses < 3);
-
-    let act = active();
-    while (act.length > 0) {
-      const groups = new Map();
-      for (const id of act) {
-        const k = state[id].wins + '-' + state[id].losses;
-        if (!groups.has(k)) groups.set(k, []);
-        groups.get(k).push(id);
-      }
-      const roundPairs = [];
-      for (const ids of groups.values()) {
-        for (const [a, b] of pairGroup(seedGroup(ids, state), hasPlayed)) roundPairs.push([a, b]);
-      }
-      for (const [a, b] of roundPairs) {
+    let pairs = nextRoundPairings(teams, results);
+    while (pairs.length > 0) {
+      const state = buildState(teams, results);
+      for (const [a, b] of pairs) {
         const isBo3 = state[a].wins === 2 || state[a].losses === 2 || state[b].wins === 2 || state[b].losses === 2;
         const forced = locked.get(pairKey(a, b));
         const winner = forced !== undefined ? forced : resolve(a, b, isBo3);
-        const loser = winner === a ? b : a;
-        state[winner].wins++;
-        state[loser].losses++;
-        state[a].opponents.push(b);
-        state[b].opponents.push(a);
-        played.add(pairKey(a, b));
+        results.push({ a, b, winner });
         matchups.push([a, b]);
       }
-      act = active();
+      pairs = nextRoundPairings(teams, results);
     }
 
+    const finalState = buildState(teams, results);
     const standings = new Map();
     for (const t of teams) {
-      const s = state[t.id];
+      const s = finalState[t.id];
       standings.set(t.id, { wins: s.wins, losses: s.losses, result: s.wins === 3 ? 'advance' : 'eliminate' });
     }
     return { matchups, standings };
@@ -161,7 +181,7 @@
     return { meetProb: meet, advanceProb: div(adv), threeZero: div(z30), zeroThree: div(z03), n: N };
   }
 
-  const api = { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup, pairKey, simulateStage, mulberry32, runMonteCarlo };
+  const api = { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SwissEngine = api;

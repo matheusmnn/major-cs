@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup, simulateStage, pairKey, mulberry32, runMonteCarlo } = require('../engine.js');
+const { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup, simulateStage, pairKey, mulberry32, runMonteCarlo, nextRoundPairings } = require('../engine.js');
 
 const teams16 = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, seed: i + 1, strength: 1600 - i * 40 }));
 
@@ -130,4 +130,21 @@ test('runMonteCarlo: probabilidades em [0,1] e advanceProb soma ~8', () => {
   for (const p of r.advanceProb.values()) assert.ok(p >= 0 && p <= 1);
   const sum = [...r.advanceProb.values()].reduce((a, b) => a + b, 0);
   assert.ok(Math.abs(sum - 8) < 1e-9, `soma avançar = ${sum}`);
+});
+
+// --- Task 6: pareamento da rodada atual (p/ painel ao vivo) ---
+
+test('nextRoundPairings: sem resultados => rodada 1 por seed (1x9..8x16)', () => {
+  assert.deepEqual(nextRoundPairings(teams16, []), [[1, 9], [2, 10], [3, 11], [4, 12], [5, 13], [6, 14], [7, 15], [8, 16]]);
+});
+
+test('nextRoundPairings: após rodada 1 => grupos 1-0 e 0-1 pareados', () => {
+  const r1 = [1, 2, 3, 4, 5, 6, 7, 8].map((w, i) => ({ a: w, b: w + 8, winner: w }));
+  assert.deepEqual(nextRoundPairings(teams16, r1), [[1, 5], [2, 6], [3, 7], [4, 8], [9, 13], [10, 14], [11, 15], [12, 16]]);
+});
+
+test('nextRoundPairings: stage encerrado => []', () => {
+  const r = simulateStage(teams16, { resolve: (a, b) => Math.min(a, b), locked: new Map() });
+  const allResults = r.matchups.map(([a, b]) => ({ a, b, winner: Math.min(a, b) }));
+  assert.deepEqual(nextRoundPairings(teams16, allResults), []);
 });
