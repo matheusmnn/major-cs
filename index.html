@@ -74,6 +74,8 @@
         <span class="muted" style="font-size:12px">menor = favorito domina · maior = mais zebra</span>
         <label>Seed do RNG (opcional, p/ repetir)</label>
         <input id="rngseed" type="number" value="1" min="0">
+        <label style="margin-top:10px"><input type="checkbox" id="useH2H" checked> usar retrospecto direto (H2H)</label>
+        <div id="dataStatus" class="muted" style="font-size:12px;margin-top:6px"></div>
         <div class="row" style="margin-top:12px">
           <button id="run">Rodar</button>
           <span id="status" class="muted"></span>
@@ -130,9 +132,35 @@ let lockedMatches = [];      // [{a,b,winner}]
 let roundPicks = {};         // pairKey -> winnerId (rodada atual, ainda não confirmada)
 let overrides = [];          // [{a,b,p}]
 let last = null;             // último resultado do MC
+const DATA = (typeof window !== 'undefined' && window.__DATA__) || null;
 
 const $ = (id) => document.getElementById(id);
 const nameOf = (id) => teams.find((t) => t.id === id).name;
+const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+const idByName = (n) => { const t = teams.find((x) => norm(x.name) === norm(n)); return t ? t.id : null; };
+
+// Aplica forças do data.json (por nome) e informa o status.
+function applyData() {
+  if (!DATA) { $('dataStatus').textContent = 'sem data.json — força manual'; return; }
+  let hit = 0;
+  for (const d of DATA.teams || []) {
+    const t = teams.find((x) => norm(x.name) === norm(d.name));
+    if (t && typeof d.force === 'number') { t.strength = d.force; hit++; }
+  }
+  $('dataStatus').textContent = `data.json: ${hit}/${teams.length} forças + ${(DATA.h2h || []).length} H2H`;
+}
+
+// Map pairKey(id) -> {low, high} a partir do H2H por nome do data.json.
+function h2hMap() {
+  const m = new Map();
+  if (!DATA || !$('useH2H').checked) return m;
+  for (const h of DATA.h2h || []) {
+    const ia = idByName(h.a), ib = idByName(h.b);
+    if (!ia || !ib) continue;
+    m.set(E.pairKey(ia, ib), ia < ib ? { low: h.winsA, high: h.winsB } : { low: h.winsB, high: h.winsA });
+  }
+  return m;
+}
 
 function renderTeams() {
   $('teamRows').innerHTML = teams.map((t, i) => `
@@ -171,6 +199,7 @@ function run() {
     last = E.runMonteCarlo(teams, {
       N: +$('N').value, upset: +$('upset').value,
       locked: lockedMap(), seed: +$('rngseed').value >>> 0, probOverride: overrideMap(),
+      h2h: h2hMap(), k: 4,
     });
     renderHeat();
     $('status').textContent = `${last.n.toLocaleString('pt-BR')} sims · ${Math.round(performance.now() - t0)} ms`;
@@ -285,7 +314,9 @@ $('ovAdd').addEventListener('click', () => {
   renderOverrides(); run();
 });
 
+$('useH2H').addEventListener('change', run);
 $('upsetVal').textContent = $('upset').value;
+applyData();
 renderTeams();
 renderLive();
 run();

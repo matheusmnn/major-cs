@@ -1,0 +1,15 @@
+{
+  "name": "major-confrontos",
+  "version": "1.0.0",
+  "description": "Visualizador de confrontos da fase suíça do Major de CS2",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "fetch": "node fetch.js",
+    "build": "node build.js",
+    "prepare-data": "node fetch.js && node build.js"
+  },
+  "dependencies": {
+    "hltv": "^3.5.0"
+  }
+}
