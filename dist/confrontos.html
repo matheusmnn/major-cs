@@ -332,14 +332,16 @@
 </script>
 <script>
 const E = globalThis.SwissEngine;
-// Nomes iguais aos de teams.json p/ o data.json casar a força por nome. Edite conforme o major.
+// [nome, força] por seed. Força = pontos Valve do ranking HLTV (nov/2026). Edite conforme o major.
 const DEFAULTS = [
-  'Ninjas in Pyjamas','PARIVISION','Heroic','FaZe','Team Liquid','Eternal Fire','100 Thieves','9z Team',
-  'M80','DEND','Imperial','Wildcard','BC.Game','FlyQuest','CW','LVG'
+  ['Ninjas in Pyjamas', 1476], ['PARIVISION', 1572], ['Heroic', 1500], ['FaZe', 1448],
+  ['Team Liquid', 1528], ['Eternal Fire', 1450], ['100 Thieves', 1518], ['9z', 1366],
+  ['M80', 1417], ['DENDELE', 1415], ['Imperial', 1354], ['Wildcard', 1320],
+  ['BC.Game', 1287], ['FlyQuest', 1295], ['CW', 1250], ['LVG', 1250],
 ];
 
 // estado
-let teams = DEFAULTS.map((name, i) => ({ id: i + 1, seed: i + 1, name, strength: 1600 - i * 45 }));
+let teams = DEFAULTS.map(([name, strength], i) => ({ id: i + 1, seed: i + 1, name, strength }));
 let lockedMatches = [];      // [{a,b,winner}]
 let roundPicks = {};         // pairKey -> winnerId (rodada atual, ainda não confirmada)
 let overrides = [];          // [{a,b,p}]
