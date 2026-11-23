@@ -225,7 +225,6 @@ function renderDetail(i) {
 function renderLive() {
   const pairs = E.nextRoundPairings(teams, lockedMatches);
   if (pairs.length === 0) { $('live').innerHTML = '<span class="muted">Stage encerrado — todos definidos.</span>'; return; }
-  const state = {}; // só p/ marcar Bo3
   $('live').innerHTML = pairs.map(([a, b]) => {
     const key = E.pairKey(a, b);
     const sel = roundPicks[key];
