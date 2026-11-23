@@ -53,20 +53,25 @@ test('seedGroup: ordena por Buchholz desc, depois seed asc', () => {
   assert.deepEqual(seedGroup([1, 2, 3, 4], state), [1, 3, 4, 2]);
 });
 
-test('pairGroup R1-like: 16 ordenados por seed => 1x9..8x16', () => {
+test('pairGroup split (rodada 1): 16 por seed => 1x9..8x16', () => {
   const ids1to16 = Array.from({ length: 16 }, (_, i) => i + 1);
-  const pairs = pairGroup(ids1to16, () => false);
+  const pairs = pairGroup(ids1to16, () => false, 'split');
   assert.deepEqual(pairs, [[1, 9], [2, 10], [3, 11], [4, 12], [5, 13], [6, 14], [7, 15], [8, 16]]);
 });
 
-test('pairGroup: metade-vs-metade em grupo de 4 => rank1x3, rank2x4', () => {
-  assert.deepEqual(pairGroup([10, 20, 30, 40], () => false), [[10, 30], [20, 40]]);
+test('pairGroup fold (rodadas 2+): grupo de 8 => melhor x pior (1x8,2x7,3x6,4x5)', () => {
+  assert.deepEqual(pairGroup([1, 2, 3, 4, 5, 6, 7, 8], () => false), [[1, 8], [2, 7], [3, 6], [4, 5]]);
 });
 
-test('pairGroup: evita revanche deslocando o par', () => {
-  const hp = (a, b) => (a === 10 && b === 30) || (a === 30 && b === 10);
+test('pairGroup fold: grupo de 4 => 1x4, 2x3', () => {
+  assert.deepEqual(pairGroup([10, 20, 30, 40], () => false), [[10, 40], [20, 30]]);
+});
+
+test('pairGroup fold: evita revanche deslocando o par', () => {
+  // fold pareia 10x40; se já jogaram, desloca p/ o vizinho mais próximo sem revanche
+  const hp = (a, b) => (a === 10 && b === 40) || (a === 40 && b === 10);
   const pairs = pairGroup([10, 20, 30, 40], hp);
-  assert.ok(!pairs.some(([a, b]) => (a === 10 && b === 30) || (a === 30 && b === 10)));
+  assert.ok(!pairs.some(([a, b]) => (a === 10 && b === 40) || (a === 40 && b === 10)));
 });
 
 // --- Task 3: simulação de stage ---
@@ -138,9 +143,9 @@ test('nextRoundPairings: sem resultados => rodada 1 por seed (1x9..8x16)', () =>
   assert.deepEqual(nextRoundPairings(teams16, []), [[1, 9], [2, 10], [3, 11], [4, 12], [5, 13], [6, 14], [7, 15], [8, 16]]);
 });
 
-test('nextRoundPairings: após rodada 1 => grupos 1-0 e 0-1 pareados', () => {
-  const r1 = [1, 2, 3, 4, 5, 6, 7, 8].map((w, i) => ({ a: w, b: w + 8, winner: w }));
-  assert.deepEqual(nextRoundPairings(teams16, r1), [[1, 5], [2, 6], [3, 7], [4, 8], [9, 13], [10, 14], [11, 15], [12, 16]]);
+test('nextRoundPairings: após rodada 1 => grupos 1-0 e 0-1 em dobra (melhor x pior)', () => {
+  const r1 = [1, 2, 3, 4, 5, 6, 7, 8].map((w) => ({ a: w, b: w + 8, winner: w }));
+  assert.deepEqual(nextRoundPairings(teams16, r1), [[1, 8], [2, 7], [3, 6], [4, 5], [9, 16], [10, 15], [11, 14], [12, 13]]);
 });
 
 test('nextRoundPairings: stage encerrado => []', () => {

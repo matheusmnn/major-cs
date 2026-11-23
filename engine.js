@@ -21,34 +21,45 @@
     });
   }
 
-  function pairGroup(sorted, hasPlayed) {
-    const half = sorted.length / 2;
-    const top = sorted.slice(0, half);
-    const bottom = sorted.slice(half);
-    const used = new Array(bottom.length).fill(false);
-    const result = [];
+  // Ordem de candidatos para o rank i: o parceiro desejado primeiro, depois os mais próximos dele.
+  function candidateOrder(i, pref, n) {
+    const cand = [];
+    for (let j = 0; j < n; j++) if (j !== i) cand.push(j);
+    cand.sort((x, y) => Math.abs(x - pref) - Math.abs(y - pref) || x - y);
+    return cand;
+  }
 
-    // Busca em profundidade por um pareamento sem revanche (metade de cima x metade de baixo).
-    function dfs(k) {
-      if (k === half) return true;
-      const a = top[k];
-      for (let bi = 0; bi < bottom.length; bi++) {
-        if (used[bi] || hasPlayed(a, bottom[bi])) continue;
-        used[bi] = true;
-        result.push([a, bottom[bi]]);
-        if (dfs(k + 1)) return true;
-        used[bi] = false;
+  function matchPairs(sorted, want, blocked) {
+    const n = sorted.length;
+    const used = new Array(n).fill(false);
+    const result = [];
+    function dfs() {
+      const i = used.indexOf(false);
+      if (i === -1) return true;
+      used[i] = true;
+      for (const j of candidateOrder(i, want(i), n)) {
+        if (used[j] || blocked(sorted[i], sorted[j])) continue;
+        used[j] = true;
+        result.push([sorted[i], sorted[j]]);
+        if (dfs()) return true;
+        used[j] = false;
         result.pop();
       }
+      used[i] = false;
       return false;
     }
-    if (dfs(0)) return result;
+    return dfs() ? result : null;
+  }
 
-    // Último recurso: nenhum pareamento sem revanche existe -> permite revanche (exceção extrema).
-    const fallback = [];
-    const pool = bottom.slice();
-    for (let k = 0; k < half; k++) fallback.push([top[k], pool.shift()]);
-    return fallback;
+  // Pareamento de um grupo. mode 'split' = rodada 1 (rank k x rank k+n/2, ex. 1x9).
+  // mode 'fold' (padrão) = rodadas seguintes, melhor x pior (1x8, 2x7, 3x6, 4x5).
+  // Evita revanche via backtracking; só permite revanche se nenhum pareamento sem ela existir.
+  function pairGroup(sorted, hasPlayed, mode) {
+    const n = sorted.length;
+    const want = (mode === 'split')
+      ? (i) => (i < n / 2 ? i + n / 2 : i - n / 2)
+      : (i) => n - 1 - i;
+    return matchPairs(sorted, want, hasPlayed) || matchPairs(sorted, want, () => false);
   }
 
   function pairKey(a, b) {
@@ -82,9 +93,10 @@
     }
     // Ordena os grupos por record (mais vitórias primeiro) para ordem de rodada estável.
     const keys = [...groups.keys()].sort((x, y) => Number(y.split('-')[0]) - Number(x.split('-')[0]));
+    const mode = played.size === 0 ? 'split' : 'fold'; // rodada 1 = seed N x N+8; demais = melhor x pior
     const pairs = [];
     for (const k of keys) {
-      for (const [a, b] of pairGroup(seedGroup(groups.get(k), state), hasPlayed)) pairs.push([a, b]);
+      for (const [a, b] of pairGroup(seedGroup(groups.get(k), state), hasPlayed, mode)) pairs.push([a, b]);
     }
     return pairs;
   }
