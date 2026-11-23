@@ -25,5 +25,10 @@ test('stats.json: cada time tem campos válidos', () => {
     for (const k of ['S', 'A', 'B', 'C']) {
       assert.ok(Number.isInteger(s.tiers[k]) && s.tiers[k] >= 0, `${name}: tiers.${k}`);
     }
+    assert.ok(Array.isArray(s.players) && s.players.length > 0, `${name}: players`);
+    for (const p of s.players) {
+      assert.ok(typeof p.name === 'string' && p.name, `${name}: player name`);
+      assert.ok(typeof p.rating === 'number', `${name}: player rating`);
+    }
   }
 });

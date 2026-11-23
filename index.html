@@ -326,14 +326,18 @@ function renderDetail(i) {
   const adv = last.advanceProb.get(team.id), z30 = last.threeZero.get(team.id), z03 = last.zeroThree.get(team.id);
   const s = STATS.get(norm(team.name));
   const tierBadges = (t) => ['S', 'A', 'B', 'C'].filter((k) => t[k] > 0).map((k) => `<span class="tier">${k}</span>`).join('');
+  const rateColor = (r) => (r >= 1.1 ? 'var(--win)' : r < 1 ? 'var(--lose)' : 'var(--fg)');
   const recent = s ? `
-    <div class="dlabel">Forma recente</div>
+    <div class="dlabel">Retrospecto</div>
     <div class="row" style="gap:16px">
-      <span class="pill">média dos adversários #${Math.round(s.avgOppRank)}</span>
+      <span class="pill">Média dos adversários #${Math.round(s.avgOppRank)}</span>
       <span>${tierBadges(s.tiers) || '<span class="muted">sem tier</span>'}</span>
     </div>
     <table class="teamstats" style="margin-top:8px"><tbody>${s.events.map((e) =>
-      `<tr><td>${e.name}</td><td style="text-align:right;white-space:nowrap">${e.tier ? `<span class="tier">${e.tier}</span>` : ''}<span class="muted">${e.placement}</span></td></tr>`).join('')}</tbody></table>` : '';
+      `<tr><td>${e.name}</td><td style="text-align:right;white-space:nowrap">${e.tier ? `<span class="tier">${e.tier}</span>` : ''}<span class="muted">${e.placement}</span></td></tr>`).join('')}</tbody></table>
+    <div class="dlabel">Elenco <span class="muted" style="font-weight:400;font-family:Inter">rating 3.0</span></div>
+    <table class="teamstats"><tbody>${s.players.map((p) =>
+      `<tr><td>${p.name}</td><td class="mono" style="text-align:right;color:${rateColor(p.rating)}">${p.rating.toFixed(2)}</td></tr>`).join('')}</tbody></table>` : '';
   $('detailTitle').textContent = `${team.seed}. ${team.name}`;
   $('detail').innerHTML = `
     <div class="row" style="gap:16px;margin-bottom:8px">
