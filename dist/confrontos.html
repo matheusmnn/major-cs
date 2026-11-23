@@ -93,6 +93,7 @@
   .rank td.bar { background: linear-gradient(90deg, var(--bc) var(--v,0%), transparent 0); }
   .bar-adv { --bc: rgba(62,196,125,.18); } .bar-z30 { --bc: rgba(236,184,68,.2); } .bar-z03 { --bc: rgba(224,93,96,.18); }
   .teamstats td { padding: 3px 6px; border-bottom: 1px solid var(--line); }
+  .dlabel { color: var(--muted); font-size: 12px; margin: 14px 0 6px; font-family: 'Chakra Petch', sans-serif; letter-spacing: .02em; }
   .muted { color: var(--muted); } .mono { font-variant-numeric: tabular-nums; }
   details { margin-top: 14px; } summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 </style>
@@ -537,17 +538,9 @@ function renderRanking() {
 
   const th = (key, label) => `<th class="sortable ${sortKey === key ? 'active' : ''}" data-k="${key}">${label}</th>`;
   const cell = (v, cls) => `<td class="bar ${cls}" style="--v:${(v * 100).toFixed(0)}%">${(v * 100).toFixed(1)}</td>`;
-  const statOf = (name) => STATS.get(norm(name));
-  const avgCell = (s) => `<td>${s ? Math.round(s.avgOppRank) : '—'}</td>`;
-  const tierCell = (s) => {
-    const sel = s ? ['S', 'A', 'B', 'C'].filter((k) => s.tiers[k] > 0) : [];
-    return `<td class="l">${sel.length ? sel.map((k) => `<span class="tier">${k}</span>`).join('') : '<span class="muted">—</span>'}</td>`;
-  };
-  let html = `<thead><tr><th class="l">Time</th><th>Média adv.</th><th class="l">Tiers</th>${th('advance', 'avança')}${th('z30', '3-0')}${th('z03', '0-3')}</tr></thead><tbody>`;
-  html += rows.map((r) => {
-    const s = statOf(r.t.name);
-    return `<tr><td class="l"><s>${r.t.seed}</s>${r.t.name}</td>${avgCell(s)}${tierCell(s)}${cell(r.adv, 'bar-adv')}${cell(r.z30, 'bar-z30')}${cell(r.z03, 'bar-z03')}</tr>`;
-  }).join('');
+  let html = `<thead><tr><th class="l">Time</th>${th('advance', 'avança')}${th('z30', '3-0')}${th('z03', '0-3')}</tr></thead><tbody>`;
+  html += rows.map((r) =>
+    `<tr><td class="l"><s>${r.t.seed}</s>${r.t.name}</td>${cell(r.adv, 'bar-adv')}${cell(r.z30, 'bar-z30')}${cell(r.z03, 'bar-z03')}</tr>`).join('');
   html += '</tbody>';
   $('rankTable').innerHTML = html;
   $('rankTable').querySelectorAll('.sortable').forEach((el) =>
@@ -559,6 +552,16 @@ function renderDetail(i) {
   const opp = teams.map((t, j) => ({ t, p: last.meetProb[i][j] }))
     .filter((x) => x.t.id !== team.id && x.p > 0).sort((a, b) => b.p - a.p);
   const adv = last.advanceProb.get(team.id), z30 = last.threeZero.get(team.id), z03 = last.zeroThree.get(team.id);
+  const s = STATS.get(norm(team.name));
+  const tierBadges = (t) => ['S', 'A', 'B', 'C'].filter((k) => t[k] > 0).map((k) => `<span class="tier">${k}</span>`).join('');
+  const recent = s ? `
+    <div class="dlabel">Forma recente</div>
+    <div class="row" style="gap:16px">
+      <span class="pill">média dos adversários #${Math.round(s.avgOppRank)}</span>
+      <span>${tierBadges(s.tiers) || '<span class="muted">sem tier</span>'}</span>
+    </div>
+    <table class="teamstats" style="margin-top:8px"><tbody>${s.events.map((e) =>
+      `<tr><td>${e.name}</td><td style="text-align:right;white-space:nowrap">${e.tier ? `<span class="tier">${e.tier}</span>` : ''}<span class="muted">${e.placement}</span></td></tr>`).join('')}</tbody></table>` : '';
   $('detailTitle').textContent = `${team.seed}. ${team.name}`;
   $('detail').innerHTML = `
     <div class="row" style="gap:16px;margin-bottom:8px">
@@ -566,6 +569,8 @@ function renderDetail(i) {
       <span class="pill">3-0 ${(z30 * 100).toFixed(1)}%</span>
       <span class="pill elim">0-3 ${(z03 * 100).toFixed(1)}%</span>
     </div>
+    ${recent}
+    <div class="dlabel">Pode enfrentar</div>
     <table class="teamstats"><tbody>${opp.map((x) =>
       `<tr><td>${x.t.seed}. ${x.t.name}</td><td class="mono" style="text-align:right">${(x.p * 100).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`;
 }
