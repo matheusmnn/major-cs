@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup, simulateStage, pairKey, mulberry32, runMonteCarlo, nextRoundPairings } = require('../engine.js');
+const { mapWinProb, bo3WinProb, seedGroup, pairGroup, simulateStage, pairKey, mulberry32, runMonteCarlo, nextRoundPairings } = require('../engine.js');
 
 const teams16 = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, seed: i + 1, strength: 1600 - i * 40 }));
 
@@ -34,23 +34,11 @@ function mkState(spec) {
   return state;
 }
 
-test('buchholz: soma (wins-losses) dos adversários enfrentados', () => {
+test('seedGroup: ordena pela seed inicial crescente (1 = melhor)', () => {
   const state = mkState({
-    1: { seed: 1, opponents: [5, 6] },
-    5: { seed: 5, wins: 2, losses: 0 },
-    6: { seed: 6, wins: 0, losses: 1 },
+    7: { seed: 7 }, 2: { seed: 2 }, 11: { seed: 11 }, 4: { seed: 4 },
   });
-  assert.equal(buchholz(1, state), (2 - 0) + (0 - 1));
-});
-
-test('seedGroup: ordena por Buchholz desc, depois seed asc', () => {
-  const state = mkState({
-    1: { seed: 1, opponents: [5] }, 5: { seed: 5, wins: 2, losses: 0 },   // buch +2
-    2: { seed: 2, opponents: [6] }, 6: { seed: 6, wins: 0, losses: 2 },   // buch -2
-    3: { seed: 3, opponents: [7] }, 7: { seed: 7, wins: 2, losses: 0 },   // buch +2 (tie c/ 1 -> seed menor antes)
-    4: { seed: 4, opponents: [8] }, 8: { seed: 8, wins: 1, losses: 1 },   // buch 0
-  });
-  assert.deepEqual(seedGroup([1, 2, 3, 4], state), [1, 3, 4, 2]);
+  assert.deepEqual(seedGroup([7, 2, 11, 4], state), [2, 4, 7, 11]);
 });
 
 test('pairGroup split (rodada 1): 16 por seed => 1x9..8x16', () => {

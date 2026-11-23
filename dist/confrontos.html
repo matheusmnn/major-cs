@@ -128,16 +128,9 @@
     return p * p * (3 - 2 * p);
   }
 
-  function buchholz(teamId, state) {
-    return state[teamId].opponents.reduce((sum, opp) => sum + (state[opp].wins - state[opp].losses), 0);
-  }
-
+  // Ordena um grupo pela seed inicial (1 = melhor). Dentro do grupo o pareamento é melhor x pior.
   function seedGroup(groupIds, state) {
-    return groupIds.slice().sort((a, b) => {
-      const db = buchholz(b, state) - buchholz(a, state);
-      if (db !== 0) return db;
-      return state[a].seed - state[b].seed;
-    });
+    return groupIds.slice().sort((a, b) => state[a].seed - state[b].seed);
   }
 
   // Ordem de candidatos para o rank i: o parceiro desejado primeiro, depois os mais próximos dele.
@@ -314,7 +307,7 @@
     return { meetProb: meet, advanceProb: div(adv), threeZero: div(z30), zeroThree: div(z03), n: N };
   }
 
-  const api = { mapWinProb, bo3WinProb, buchholz, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo };
+  const api = { mapWinProb, bo3WinProb, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SwissEngine = api;
