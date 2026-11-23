@@ -9,6 +9,15 @@
     return p * p * (3 - 2 * p);
   }
 
+  // Mistura a prob. base com o retrospecto direto (H2H). winsA/winsB = jogos vencidos
+  // por cada lado; k controla quantos confrontos são precisos p/ o H2H pesar.
+  function blendH2H(pBase, winsA, winsB, k) {
+    const n = winsA + winsB;
+    if (n === 0) return pBase;
+    const w = n / (n + k);
+    return (1 - w) * pBase + w * (winsA / n);
+  }
+
   // Ordena um grupo pela seed inicial (1 = melhor). Dentro do grupo o pareamento é melhor x pior.
   function seedGroup(groupIds, state) {
     return groupIds.slice().sort((a, b) => state[a].seed - state[b].seed);
@@ -145,6 +154,8 @@
     const upset = opts.upset;
     const locked = opts.locked || new Map();
     const probOverride = opts.probOverride || new Map();
+    const h2h = opts.h2h || new Map();
+    const k = opts.k == null ? 4 : opts.k;
     const rng = mulberry32(opts.seed >>> 0);
     const n = teams.length;
     const index = new Map(teams.map((t, i) => [t.id, i]));
@@ -157,9 +168,12 @@
 
     const resolve = (a, b, isBo3) => {
       let pA;
-      const ov = probOverride.get(pairKey(a, b));
+      const key = pairKey(a, b);
+      const ov = probOverride.get(key);
       if (ov !== undefined) pA = a < b ? ov : 1 - ov;
       else pA = mapWinProb(strength.get(a), strength.get(b), upset);
+      const h = h2h.get(key);
+      if (h) pA = blendH2H(pA, a < b ? h.low : h.high, a < b ? h.high : h.low, k);
       if (isBo3) pA = bo3WinProb(pA);
       return rng() < pA ? a : b;
     };
@@ -188,7 +202,7 @@
     return { meetProb: meet, advanceProb: div(adv), threeZero: div(z30), zeroThree: div(z03), n: N };
   }
 
-  const api = { mapWinProb, bo3WinProb, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo };
+  const api = { mapWinProb, bo3WinProb, blendH2H, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SwissEngine = api;

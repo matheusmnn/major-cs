@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { mapWinProb, bo3WinProb, seedGroup, pairGroup, simulateStage, pairKey, mulberry32, runMonteCarlo, nextRoundPairings } = require('../engine.js');
+const { mapWinProb, bo3WinProb, seedGroup, pairGroup, simulateStage, pairKey, mulberry32, runMonteCarlo, nextRoundPairings, blendH2H } = require('../engine.js');
 
 const teams16 = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, seed: i + 1, strength: 1600 - i * 40 }));
 
@@ -20,6 +20,20 @@ test('mapWinProb: upset maior aproxima de 0.5', () => {
 test('bo3WinProb: favorito de mapa fica mais favorito em Bo3', () => {
   assert.ok(bo3WinProb(0.6) > 0.6);
   assert.equal(bo3WinProb(0.5), 0.5);
+});
+
+test('blendH2H: sem histórico (0,0) => mantém a base', () => {
+  assert.equal(blendH2H(0.7, 0, 0, 4), 0.7);
+});
+
+test('blendH2H: 4x0 a favor de A com k=4 => peso 50% (0.5*base + 0.5*1)', () => {
+  assert.equal(blendH2H(0.5, 4, 0, 4), 0.75);
+});
+
+test('blendH2H: mais confrontos => mais peso no H2H', () => {
+  const pouco = blendH2H(0.5, 2, 0, 4); // w=2/6
+  const muito = blendH2H(0.5, 8, 0, 4); // w=8/12
+  assert.ok(muito > pouco);
 });
 
 // --- Task 2: pareamento ---
