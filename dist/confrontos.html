@@ -64,6 +64,11 @@
     background: linear-gradient(90deg, hsl(44 36% 17%), hsl(44 85% 60%)); }
   .pill { display: inline-block; padding: 2px 9px; border-radius: 20px; background: var(--panel2);
     border: 1px solid var(--line); color: var(--muted); font-size: 12px; font-weight: 500; }
+  .tier { display: inline-block; padding: 1px 6px; border-radius: 5px; background: var(--panel2);
+    border: 1px solid var(--line); color: var(--gold); font-size: 11px; font-weight: 600;
+    font-family: 'Chakra Petch', sans-serif; margin-right: 3px; }
+  .ctxrow { display: flex; align-items: center; gap: 8px; margin-top: 14px; color: var(--muted); font-size: 12px; }
+  .ctxrow input { width: auto; }
   /* live */
   .match { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
   .match .vs { color: var(--muted); font-size: 12px; }
@@ -114,6 +119,7 @@
           <input id="upset" type="range" min="0" max="100" step="1" value="50">
           <label>Semente do sorteio (repete o mesmo resultado)</label>
           <input id="rngseed" type="number" value="1" min="0">
+          <label class="ctxrow"><input id="ctx" type="checkbox"> Considerar contexto (calendário + eventos)</label>
           <div class="row" style="margin-top:16px">
             <button id="run">Rodar</button>
             <span id="status" class="muted"></span>
@@ -162,6 +168,7 @@
     </div>
   </div>
 
+<script>window.__STATS__={"generatedAt":"2026-11-23","rankingSource":"global/valve","note":"Extraído à mão dos prints em assets/ (últimos jogos, ranking global Valve top-96, listas de tier). Adversário fora do top-96 = rank 100. Evento fora das listas S/A/B/C = tier null. tiers = contagem de eventos distintos por tier.","teams":{"Ninjas in Pyjamas":{"avgOppRank":37.2,"oppCount":16,"unrankedOpps":1,"tiers":{"S":1,"A":1,"B":2,"C":0},"events":[{"name":"Stake Ranked Episode 6","tier":"A","placement":"5-6th"},{"name":"Stake Pulse Beat III","tier":"B","placement":"1st"},{"name":"Thunderpick World Championship 2026","tier":"S","placement":"7-8th"},{"name":"ROG JOURNEY Autumn 2026","tier":"B","placement":"1st"}]},"PARIVISION":{"avgOppRank":17.8,"oppCount":16,"unrankedOpps":0,"tiers":{"S":2,"A":1,"B":0,"C":0},"events":[{"name":"PGL Cluj-Napoca 2027 Closed Qualifier","tier":null,"placement":"5-6th"},{"name":"IEM Beijing 2026","tier":"S","placement":"5-6th"},{"name":"1win Private Club #2","tier":"A","placement":"2nd"},{"name":"Thunderpick World Championship 2026","tier":"S","placement":"7-8th"},{"name":"ESL Pro League Season 24","tier":null,"placement":"5-8th"}]},"Heroic":{"avgOppRank":30.8,"oppCount":16,"unrankedOpps":1,"tiers":{"S":1,"A":0,"B":2,"C":0},"events":[{"name":"PGL Cluj-Napoca 2027 Closed Qualifier","tier":null,"placement":"4th"},{"name":"IEM Beijing 2026","tier":"S","placement":"9-12th"},{"name":"Digital Crusade DraculaN Season 7","tier":"B","placement":"7-8th"},{"name":"Stake Pulse Beat III","tier":"B","placement":"3rd"}]},"FaZe":{"avgOppRank":42.6,"oppCount":16,"unrankedOpps":1,"tiers":{"S":1,"A":0,"B":2,"C":0},"events":[{"name":"PGL Cluj-Napoca 2027 Closed Qualifier","tier":null,"placement":"7-8th"},{"name":"IEM Beijing 2026","tier":"S","placement":"13-16th"},{"name":"RLG Tesla Cup 2026","tier":"B","placement":"3rd"},{"name":"Digital Crusade DraculaN Season 7","tier":"B","placement":"5-6th"},{"name":"Roman Imperium Cup IX","tier":null,"placement":"1st"}]},"Team Liquid":{"avgOppRank":20.2,"oppCount":16,"unrankedOpps":0,"tiers":{"S":2,"A":1,"B":1,"C":0},"events":[{"name":"IEM Beijing 2026","tier":"S","placement":"7-8th"},{"name":"PGL Masters Bucharest 2026","tier":"S","placement":"9-11th"},{"name":"1win Private Club #2","tier":"A","placement":"7-8th"},{"name":"Stake Pulse Beat III","tier":"B","placement":"5-8th"},{"name":"iBUYPOWER Masters FML 2026","tier":null,"placement":"1st"}]},"Eternal Fire":{"avgOppRank":41.4,"oppCount":16,"unrankedOpps":0,"tiers":{"S":0,"A":1,"B":1,"C":0},"events":[{"name":"PGL Cluj-Napoca 2027 Closed Qualifier","tier":null,"placement":"5-6th"},{"name":"Stake Ranked Episode 5","tier":"A","placement":"1st"},{"name":"Digital Crusade DraculaN Season 7","tier":"B","placement":"1st"},{"name":"PGL Bucharest 2027 Closed Qualifier","tier":null,"placement":"7-8th"}]},"100 Thieves":{"avgOppRank":43.7,"oppCount":16,"unrankedOpps":3,"tiers":{"S":0,"A":0,"B":3,"C":0},"events":[{"name":"PGL Cluj-Napoca 2027 Closed Qualifier","tier":null,"placement":"1st"},{"name":"FiReSPORTS Last Chance 2026","tier":"B","placement":"1st"},{"name":"Stake Pulse Beat III","tier":"B","placement":"4th"},{"name":"ROG JOURNEY Autumn 2026","tier":"B","placement":"5-8th"}]},"9z":{"avgOppRank":19.4,"oppCount":16,"unrankedOpps":0,"tiers":{"S":3,"A":0,"B":0,"C":0},"events":[{"name":"IEM Beijing 2026","tier":"S","placement":"13-16th"},{"name":"PGL Masters Bucharest 2026","tier":"S","placement":"15-16th"},{"name":"Thunderpick World Championship 2026","tier":"S","placement":"5-6th"},{"name":"ESL Pro League Season 24","tier":null,"placement":"9-11th"},{"name":"FISSURE Playground 3","tier":null,"placement":"9-12th"}]},"M80":{"avgOppRank":32.9,"oppCount":16,"unrankedOpps":1,"tiers":{"S":0,"A":1,"B":0,"C":0},"events":[{"name":"ESL Pro League Season 24","tier":null,"placement":"9-11th"},{"name":"iBUYPOWER Masters FML 2026","tier":null,"placement":"3rd"},{"name":"Logitech G Play Connect 2026","tier":"A","placement":"5-6th"}]},"DENDELE":{"avgOppRank":45.6,"oppCount":16,"unrankedOpps":4,"tiers":{"S":1,"A":0,"B":0,"C":0},"events":[{"name":"Gamers Club Masters VII","tier":null,"placement":"1st"},{"name":"PGL Masters Bucharest 2026","tier":"S","placement":"12-14th"},{"name":"FRAG University 2026","tier":null,"placement":"2nd"},{"name":"iBUYPOWER Masters FML 2026","tier":null,"placement":"4th"}]},"Imperial":{"avgOppRank":63.3,"oppCount":16,"unrankedOpps":4,"tiers":{"S":0,"A":0,"B":0,"C":0},"events":[{"name":"Gamers Club Masters VII","tier":null,"placement":"2nd"},{"name":"Circuit X Curitiba Season 4","tier":null,"placement":"1st"},{"name":"FRAG University 2026","tier":null,"placement":"3rd"},{"name":"FERJEE In House Season 2","tier":null,"placement":"1st"}]},"Wildcard":{"avgOppRank":60.8,"oppCount":16,"unrankedOpps":4,"tiers":{"S":0,"A":0,"B":1,"C":0},"events":[{"name":"FiReSPORTS Last Chance 2026","tier":"B","placement":"2nd"},{"name":"FRAG University 2026","tier":null,"placement":"1st"},{"name":"FOX Legacy Season 1","tier":null,"placement":"5-6th"},{"name":"iBUYPOWER Masters FML 2026","tier":null,"placement":"2nd"}]},"BC.Game":{"avgOppRank":56.7,"oppCount":16,"unrankedOpps":4,"tiers":{"S":0,"A":0,"B":3,"C":0},"events":[{"name":"HyperX Retake Season 13","tier":null,"placement":"9-12th"},{"name":"Digital Crusade DraculaN Season 7","tier":"B","placement":"4th"},{"name":"Stake Pulse Beat III","tier":"B","placement":"9-12th"},{"name":"ROG JOURNEY Autumn 2026","tier":"B","placement":"5-8th"}]},"FlyQuest":{"avgOppRank":94.3,"oppCount":16,"unrankedOpps":11,"tiers":{"S":0,"A":0,"B":3,"C":0},"events":[{"name":"DFRAG Invitational 2026","tier":"B","placement":"1st"},{"name":"Logitech G Pro Series 2026","tier":"B","placement":"2nd"},{"name":"ANZC Locals Brisbane 2026 Season 2","tier":null,"placement":"1st"},{"name":"ESL Challenger League Season 52 Oceania Cup 2","tier":"B","placement":"1st"}]},"CW":{"avgOppRank":88.2,"oppCount":16,"unrankedOpps":9,"tiers":{"S":0,"A":0,"B":1,"C":0},"events":[{"name":"MESA Pro Series Halloween Cup 2026","tier":null,"placement":"1st"},{"name":"MaceMedia VOID Autumn Cup 2026","tier":null,"placement":"2nd"},{"name":"ESL Challenger League Season 52 Asia-Pacific Cup 3","tier":"B","placement":"4th"},{"name":"MESA Pro Series Fall 2026","tier":null,"placement":"1st"}]},"LVG":{"avgOppRank":80.8,"oppCount":16,"unrankedOpps":8,"tiers":{"S":0,"A":0,"B":2,"C":0},"events":[{"name":"MaceMedia VOID Autumn Cup 2026","tier":null,"placement":"1st"},{"name":"ESL Challenger League Season 52 Asia-Pacific Cup 3","tier":"B","placement":"1st"},{"name":"ESL Challenger League Season 52 Asia-Pacific Cup 2","tier":"B","placement":"2nd"},{"name":"IEM Beijing 2026 Asia Closed Qualifier","tier":null,"placement":"5-6th"},{"name":"BLAST Open Porto 2026","tier":null,"placement":"13-16th"}]}}};</script>
 <script>
 (function (root) {
   'use strict';
@@ -367,7 +374,23 @@
     return { meetProb: meet, advanceProb: div(adv), threeZero: div(z30), zeroThree: div(z03), n: N };
   }
 
-  const api = { mapWinProb, bo3WinProb, blendH2H, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo };
+  // Ajuste de contexto (opcional, sob toggle): calendário recente + tiers de evento.
+  // Empurrão modesto sobre a força base (pontos Valve). Ajuste as constantes aqui.
+  const CTX = { refRank: 30, kSos: 1.5, sosCap: 40, tierPts: { S: 12, A: 8, B: 4, C: 2 }, tierCap: 40, totalCap: 60 };
+
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  function contextDelta(stat, cfg) {
+    const c = cfg || CTX;
+    const r = stat && stat.avgOppRank;
+    const sos = typeof r === 'number' && Number.isFinite(r) ? clamp((c.refRank - r) * c.kSos, -c.sosCap, c.sosCap) : 0;
+    const tiers = (stat && stat.tiers) || {};
+    let t = 0;
+    for (const k in c.tierPts) t += (tiers[k] || 0) * c.tierPts[k];
+    return clamp(sos + clamp(t, 0, c.tierCap), -c.totalCap, c.totalCap);
+  }
+
+  const api = { mapWinProb, bo3WinProb, blendH2H, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo, contextDelta, CTX };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SwissEngine = api;
@@ -392,6 +415,8 @@ let overrides = [];          // [{a,b,p}]
 let last = null;             // último resultado do MC
 let sortKey = 'advance';     // coluna de ordenação do ranking
 const DATA = (typeof window !== 'undefined' && window.__DATA__) || null;
+const STATS_RAW = (typeof window !== 'undefined' && window.__STATS__) || null;
+const STATS = new Map(); // norm(nome) -> { avgOppRank, tiers, ... }
 
 const $ = (id) => document.getElementById(id);
 const nameOf = (id) => teams.find((t) => t.id === id).name;
@@ -405,6 +430,12 @@ function applyData() {
     const t = teams.find((x) => norm(x.name) === norm(d.name));
     if (t && typeof d.force === 'number') t.strength = d.force;
   }
+}
+
+// Casa o stats.json (por nome) em STATS, se houver.
+function applyStats() {
+  if (!STATS_RAW || !STATS_RAW.teams) return;
+  for (const [name, s] of Object.entries(STATS_RAW.teams)) STATS.set(norm(name), s);
 }
 
 // Knob de zebra 0..100 -> escala interna. 0 = favorito domina; 100 = quase moeda.
@@ -456,7 +487,12 @@ function run() {
   $('run').disabled = true;
   setTimeout(() => {
     const t0 = performance.now();
-    last = E.runMonteCarlo(teams, {
+    const useCtx = $('ctx').checked;
+    const effTeams = teams.map((t) => ({
+      ...t,
+      strength: t.strength + (useCtx ? E.contextDelta(STATS.get(norm(t.name))) : 0),
+    }));
+    last = E.runMonteCarlo(effTeams, {
       N: +$('N').value, upset: upsetScale(+$('upset').value),
       locked: lockedMap(), seed: +$('rngseed').value >>> 0, probOverride: overrideMap(),
       h2h: h2hMap(), k: 4,
@@ -501,9 +537,17 @@ function renderRanking() {
 
   const th = (key, label) => `<th class="sortable ${sortKey === key ? 'active' : ''}" data-k="${key}">${label}</th>`;
   const cell = (v, cls) => `<td class="bar ${cls}" style="--v:${(v * 100).toFixed(0)}%">${(v * 100).toFixed(1)}</td>`;
-  let html = `<thead><tr><th class="l">Time</th>${th('advance', 'avança')}${th('z30', '3-0')}${th('z03', '0-3')}</tr></thead><tbody>`;
-  html += rows.map((r) =>
-    `<tr><td class="l"><s>${r.t.seed}</s>${r.t.name}</td>${cell(r.adv, 'bar-adv')}${cell(r.z30, 'bar-z30')}${cell(r.z03, 'bar-z03')}</tr>`).join('');
+  const statOf = (name) => STATS.get(norm(name));
+  const avgCell = (s) => `<td>${s ? Math.round(s.avgOppRank) : '—'}</td>`;
+  const tierCell = (s) => {
+    const sel = s ? ['S', 'A', 'B', 'C'].filter((k) => s.tiers[k] > 0) : [];
+    return `<td class="l">${sel.length ? sel.map((k) => `<span class="tier">${k}</span>`).join('') : '<span class="muted">—</span>'}</td>`;
+  };
+  let html = `<thead><tr><th class="l">Time</th><th>Média adv.</th><th class="l">Tiers</th>${th('advance', 'avança')}${th('z30', '3-0')}${th('z03', '0-3')}</tr></thead><tbody>`;
+  html += rows.map((r) => {
+    const s = statOf(r.t.name);
+    return `<tr><td class="l"><s>${r.t.seed}</s>${r.t.name}</td>${avgCell(s)}${tierCell(s)}${cell(r.adv, 'bar-adv')}${cell(r.z30, 'bar-z30')}${cell(r.z03, 'bar-z03')}</tr>`;
+  }).join('');
   html += '</tbody>';
   $('rankTable').innerHTML = html;
   $('rankTable').querySelectorAll('.sortable').forEach((el) =>
@@ -580,6 +624,7 @@ function renderOverrides() {
 $('run').addEventListener('click', run);
 $('upset').addEventListener('input', () => $('upsetVal').textContent = $('upset').value);
 $('upset').addEventListener('change', run);
+$('ctx').addEventListener('change', run);
 $('confirmRound').addEventListener('click', confirmRound);
 $('resetResults').addEventListener('click', () => { lockedMatches = []; roundPicks = {}; renderLive(); run(); });
 $('ovAdd').addEventListener('click', () => {
@@ -592,6 +637,7 @@ $('ovAdd').addEventListener('click', () => {
 
 $('upsetVal').textContent = $('upset').value;
 applyData();
+applyStats();
 renderTeams();
 renderLive();
 run();
