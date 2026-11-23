@@ -73,6 +73,20 @@
   .pick.sel { background: var(--win); color: #042111; border-color: var(--win); font-weight: 600; }
   .bo3 { color: var(--gold); font-size: 10px; font-weight: 600; font-family: 'Chakra Petch', sans-serif; }
   .adv { color: var(--win); } .elim { color: var(--lose); }
+  /* ranking */
+  .rank { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .rank th { text-align: right; padding: 6px 8px; color: var(--muted); font-weight: 500; font-size: 12px;
+    border-bottom: 1px solid var(--line); }
+  .rank th.l { text-align: left; }
+  .rank th.sortable { cursor: pointer; user-select: none; }
+  .rank th.sortable:hover { color: var(--fg); }
+  .rank th.active { color: var(--gold); }
+  .rank td { text-align: right; padding: 6px 8px; border-bottom: 1px solid #151b24; font-variant-numeric: tabular-nums; }
+  .rank tr:last-child td { border-bottom: 0; }
+  .rank td.l { text-align: left; color: var(--fg); }
+  .rank td.l s { color: var(--muted); text-decoration: none; font-family: 'Chakra Petch', sans-serif; margin-right: 6px; }
+  .rank td.bar { background: linear-gradient(90deg, var(--bc) var(--v,0%), transparent 0); }
+  .bar-adv { --bc: rgba(62,196,125,.18); } .bar-z30 { --bc: rgba(236,184,68,.2); } .bar-z03 { --bc: rgba(224,93,96,.18); }
   .teamstats td { padding: 3px 6px; border-bottom: 1px solid var(--line); }
   .muted { color: var(--muted); } .mono { font-variant-numeric: tabular-nums; }
   details { margin-top: 14px; } summary { cursor: pointer; color: var(--muted); font-size: 13px; }
@@ -137,6 +151,10 @@
             <span style="margin-left:auto">vazio = nunca se cruzam · clique numa linha p/ detalhe</span></div>
         </div>
         <div class="panel">
+          <h2>Ranking <span class="muted" style="font-weight:400;font-size:12px;letter-spacing:0">clique numa coluna p/ ordenar</span></h2>
+          <table class="rank" id="rankTable"></table>
+        </div>
+        <div class="panel">
           <h2 id="detailTitle">Detalhe do time</h2>
           <div id="detail" class="muted">Rode e clique num time na matriz.</div>
         </div>
@@ -161,6 +179,7 @@ let lockedMatches = [];      // [{a,b,winner}]
 let roundPicks = {};         // pairKey -> winnerId (rodada atual, ainda não confirmada)
 let overrides = [];          // [{a,b,p}]
 let last = null;             // último resultado do MC
+let sortKey = 'advance';     // coluna de ordenação do ranking
 const DATA = (typeof window !== 'undefined' && window.__DATA__) || null;
 
 const $ = (id) => document.getElementById(id);
@@ -232,6 +251,7 @@ function run() {
       h2h: h2hMap(), k: 4,
     });
     renderHeat();
+    renderRanking();
     $('status').textContent = `${last.n.toLocaleString('pt-BR')} sims · ${Math.round(performance.now() - t0)} ms`;
     $('run').disabled = false;
   }, 10);
@@ -260,6 +280,23 @@ function renderHeat() {
   $('heat').innerHTML = html;
   $('heat').querySelectorAll('.rowlab').forEach((el) =>
     el.addEventListener('click', () => renderDetail(+el.dataset.i)));
+}
+
+function renderRanking() {
+  const col = { advance: 'adv', z30: 'z30', z03: 'z03' };
+  const rows = teams.map((t) => ({
+    t, adv: last.advanceProb.get(t.id), z30: last.threeZero.get(t.id), z03: last.zeroThree.get(t.id),
+  })).sort((a, b) => b[col[sortKey]] - a[col[sortKey]]);
+
+  const th = (key, label) => `<th class="sortable ${sortKey === key ? 'active' : ''}" data-k="${key}">${label}</th>`;
+  const cell = (v, cls) => `<td class="bar ${cls}" style="--v:${(v * 100).toFixed(0)}%">${(v * 100).toFixed(1)}</td>`;
+  let html = `<thead><tr><th class="l">Time</th>${th('advance', 'avança')}${th('z30', '3-0')}${th('z03', '0-3')}</tr></thead><tbody>`;
+  html += rows.map((r) =>
+    `<tr><td class="l"><s>${r.t.seed}</s>${r.t.name}</td>${cell(r.adv, 'bar-adv')}${cell(r.z30, 'bar-z30')}${cell(r.z03, 'bar-z03')}</tr>`).join('');
+  html += '</tbody>';
+  $('rankTable').innerHTML = html;
+  $('rankTable').querySelectorAll('.sortable').forEach((el) =>
+    el.addEventListener('click', () => { sortKey = el.dataset.k; renderRanking(); }));
 }
 
 function renderDetail(i) {
