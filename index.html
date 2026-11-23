@@ -63,6 +63,10 @@
   .num { background: var(--panel2); border: 1px solid var(--line); color: var(--fg);
     font-family: 'JetBrains Mono', monospace; font-size: 11px; text-align: right; padding: 4px 7px; width: 100%; }
   .num:focus { outline: none; border-color: var(--cy); }
+  /* sem setinhas: preenche digitando */
+  input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
   /* parâmetros */
   .field { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--faint); letter-spacing: .08em; margin: 0 0 6px; }
@@ -195,7 +199,7 @@
             <input id="N" class="ninput" type="number" value="50000" min="1000" step="1000">
             <div class="field">ZEBRA · <b id="upsetVal2"></b>/100 — 0 favorito domina, 100 quase moeda</div>
             <input id="upset" type="range" min="0" max="100" step="1" value="50">
-            <label class="chk"><input id="ctx" type="checkbox"> CONSIDERAR CONTEXTO (CAL + EVENTOS)</label>
+            <label class="chk"><input id="ctx" type="checkbox"> CONSIDERAR CONTEXTO (CALENDÁRIO RECENTE + EVENTOS)</label>
             <button id="run" class="btn">► RODAR</button>
           </div>
         </div>
@@ -283,7 +287,7 @@ const SLUG = {
   bcgame: 'bc_game', flyquest: 'flyquest', cw: 'chg_warriors', lvg: 'lynn',
 };
 const iconOf = (name) => { const s = SLUG[norm(name)]; return s ? `assets/stats/${s}/icon.png` : ''; };
-const icon = (name, size) => { const u = iconOf(name); return u ? `<img class="ic" src="${u}" alt="" width="${size}" height="${size}">` : ''; };
+const icon = (name, size) => { const u = iconOf(name); return u ? `<img class="ic" src="${u}" alt="" width="${size}" height="${size}" onerror="this.style.display='none'">` : ''; };
 
 // Aplica forças do data.json (por nome), se houver.
 function applyData() {
@@ -423,7 +427,7 @@ function renderDetail(i) {
       `<div class="drow"><span>${e.name}</span><span class="r">${e.tier ? `<span class="tier">${e.tier}</span>` : ''}<span class="muted">${e.placement}</span></span></div>`).join('')}</div>
     <div class="dlabel">ELENCO <span class="muted">rating 3.0</span></div>
     <div>${s.players.map((p) =>
-      `<div class="drow"><span>${p.name}</span><span class="r" style="color:${rateColor(p.rating)}">${p.rating.toFixed(2)}</span></div>`).join('')}</div>` : '';
+      `<div class="drow"><span>${p.name}</span><span class="r">${p.rating == null ? '<span class="muted">—</span>' : `<span style="color:${rateColor(p.rating)}">${p.rating.toFixed(2)}</span>`}</span></div>`).join('')}</div>` : '';
   $('detail').className = '';
   $('detail').innerHTML = `
     <div class="dhead">${icon(team.name, 24)}<span class="dname">${team.seed} · ${team.name}</span>

@@ -28,7 +28,7 @@ test('stats.json: cada time tem campos válidos', () => {
     assert.ok(Array.isArray(s.players) && s.players.length > 0, `${name}: players`);
     for (const p of s.players) {
       assert.ok(typeof p.name === 'string' && p.name, `${name}: player name`);
-      assert.ok(typeof p.rating === 'number', `${name}: player rating`);
+      assert.ok(p.rating === null || typeof p.rating === 'number', `${name}: player rating`);
     }
   }
 });
