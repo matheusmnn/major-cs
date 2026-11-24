@@ -18,9 +18,15 @@
     return (1 - w) * pBase + w * (winsA / n);
   }
 
-  // Ordena um grupo pela seed inicial (1 = melhor). Dentro do grupo o pareamento é melhor x pior.
+  // Buchholz: soma do saldo (vitórias - derrotas) dos adversários já enfrentados = dificuldade do caminho.
+  function buchholz(id, state) {
+    return state[id].opponents.reduce((s, o) => s + state[o].wins - state[o].losses, 0);
+  }
+
+  // Ordena um grupo para o pareamento, como o Major: Buchholz desc (caminho mais duro = melhor seed),
+  // seed inicial como desempate. Rodada 1 (sem adversários) => Buchholz 0 p/ todos => cai no seed.
   function seedGroup(groupIds, state) {
-    return groupIds.slice().sort((a, b) => state[a].seed - state[b].seed);
+    return groupIds.slice().sort((a, b) => buchholz(b, state) - buchholz(a, state) || state[a].seed - state[b].seed);
   }
 
   // Ordem de candidatos para o rank i: o parceiro desejado primeiro, depois os mais próximos dele.

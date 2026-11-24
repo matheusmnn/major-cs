@@ -102,6 +102,8 @@
   .vs { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--faint);
     display: flex; align-items: center; justify-content: center; }
   .vs.bo3 { color: var(--cy); font-size: 8px; font-weight: 700; }
+  .grec { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .1em; color: var(--dim); margin: 12px 0 5px; }
+  .grec:first-child { margin-top: 0; }
   #lockedList { color: var(--faint); font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-top: 10px; }
 
   /* overrides */
@@ -279,9 +281,15 @@
     return (1 - w) * pBase + w * (winsA / n);
   }
 
-  // Ordena um grupo pela seed inicial (1 = melhor). Dentro do grupo o pareamento é melhor x pior.
+  // Buchholz: soma do saldo (vitórias - derrotas) dos adversários já enfrentados = dificuldade do caminho.
+  function buchholz(id, state) {
+    return state[id].opponents.reduce((s, o) => s + state[o].wins - state[o].losses, 0);
+  }
+
+  // Ordena um grupo para o pareamento, como o Major: Buchholz desc (caminho mais duro = melhor seed),
+  // seed inicial como desempate. Rodada 1 (sem adversários) => Buchholz 0 p/ todos => cai no seed.
   function seedGroup(groupIds, state) {
-    return groupIds.slice().sort((a, b) => state[a].seed - state[b].seed);
+    return groupIds.slice().sort((a, b) => buchholz(b, state) - buchholz(a, state) || state[a].seed - state[b].seed);
   }
 
   // Ordem de candidatos para o rank i: o parceiro desejado primeiro, depois os mais próximos dele.
@@ -463,20 +471,36 @@
     return { meetProb: meet, advanceProb: div(adv), threeZero: div(z30), zeroThree: div(z03), n: N };
   }
 
-  // Ajuste de contexto (opcional, sob toggle): calendário recente + tiers de evento.
-  // Empurrão modesto sobre a força base (pontos Valve). Ajuste as constantes aqui.
-  const CTX = { refRank: 30, kSos: 1.5, sosCap: 40, tierPts: { S: 12, A: 8, B: 4, C: 2 }, tierCap: 40, totalCap: 60 };
+  // Ajuste de contexto (opcional, sob toggle): calendário recente (SoS) + retrospecto por evento.
+  // Empurrão sobre a força base (pontos Valve). Ajuste as constantes aqui.
+  // form[tier]: bem = colocação <= bem; mediano = <= mid; pior = o resto. pts = pontos de cada faixa.
+  // Evento sem tier (ou tier desconhecido) conta como C (fraco): pune mais ir mal, premia pouco vencer.
+  const CTX = {
+    refRank: 30, kSos: 1.5, sosCap: 40, formCap: 40, totalCap: 60,
+    form: {
+      S: { bem: 4, mid: 12, pts: { bem: 18, mid: 4, bad: -6 } },
+      A: { bem: 2, mid: 8, pts: { bem: 12, mid: 1, bad: -7 } },
+      B: { bem: 2, mid: 6, pts: { bem: 5, mid: 0, bad: -8 } },
+      C: { bem: 1, mid: 5, pts: { bem: 3, mid: 0, bad: -10 } },
+    },
+  };
 
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  // Melhor (menor) posição de uma colocação "5-6th" / "13-16th" / "1st" -> número; sem número -> null.
+  const bestPlace = (s) => { const m = String(s == null ? '' : s).match(/\d+/); return m ? +m[0] : null; };
 
   function contextDelta(stat, cfg) {
     const c = cfg || CTX;
     const r = stat && stat.avgOppRank;
     const sos = typeof r === 'number' && Number.isFinite(r) ? clamp((c.refRank - r) * c.kSos, -c.sosCap, c.sosCap) : 0;
-    const tiers = (stat && stat.tiers) || {};
-    let t = 0;
-    for (const k in c.tierPts) t += (tiers[k] || 0) * c.tierPts[k];
-    return clamp(sos + clamp(t, 0, c.tierCap), -c.totalCap, c.totalCap);
+    let f = 0;
+    for (const e of (stat && stat.events) || []) {
+      const row = c.form[e && e.tier] || c.form.C;
+      const p = bestPlace(e && e.placement);
+      if (p == null) continue; // sem colocação legível: ignora o evento
+      f += p <= row.bem ? row.pts.bem : p <= row.mid ? row.pts.mid : row.pts.bad;
+    }
+    return clamp(sos + clamp(f, -c.formCap, c.formCap), -c.totalCap, c.totalCap);
   }
 
   const api = { mapWinProb, bo3WinProb, blendH2H, seedGroup, pairGroup, pairKey, simulateStage, nextRoundPairings, mulberry32, runMonteCarlo, contextDelta, CTX };
@@ -680,11 +704,16 @@ function renderDetail(i) {
 function renderLive() {
   const pairs = E.nextRoundPairings(teams, lockedMatches);
   if (pairs.length === 0) { $('live').innerHTML = '<span class="muted" style="font-family:\'JetBrains Mono\',monospace;font-size:11px">Stage encerrado — todos definidos.</span>'; return; }
+  const st = {}; teams.forEach((t) => st[t.id] = { w: 0, l: 0 });
+  for (const m of lockedMatches) { const loser = m.winner === m.a ? m.b : m.a; st[m.winner].w++; st[loser].l++; }
+  let rec = '';
   $('live').innerHTML = pairs.map(([a, b]) => {
     const key = E.pairKey(a, b);
     const sel = roundPicks[key];
     const bo3 = isDecisive(a, b);
-    return `<div class="match">
+    const r = `${st[a].w}:${st[a].l}`;                       // grupo = record (ambos do par têm o mesmo)
+    const head = r !== rec ? (rec = r, `<div class="grec">${r}</div>`) : '';
+    return head + `<div class="match">
       <button class="pick ${sel === a ? 'sel' : ''}" data-k="${key}" data-w="${a}">${icon(nameOf(a), 14)}<span>${nameOf(a)}</span></button>
       <div class="vs${bo3 ? ' bo3' : ''}">${bo3 ? 'MD3' : '×'}</div>
       <button class="pick ${sel === b ? 'sel' : ''}" data-k="${key}" data-w="${b}">${icon(nameOf(b), 14)}<span>${nameOf(b)}</span></button>

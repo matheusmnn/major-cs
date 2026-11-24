@@ -102,6 +102,8 @@
   .vs { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--faint);
     display: flex; align-items: center; justify-content: center; }
   .vs.bo3 { color: var(--cy); font-size: 8px; font-weight: 700; }
+  .grec { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .1em; color: var(--dim); margin: 12px 0 5px; }
+  .grec:first-child { margin-top: 0; }
   #lockedList { color: var(--faint); font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-top: 10px; }
 
   /* overrides */
@@ -452,11 +454,16 @@ function renderDetail(i) {
 function renderLive() {
   const pairs = E.nextRoundPairings(teams, lockedMatches);
   if (pairs.length === 0) { $('live').innerHTML = '<span class="muted" style="font-family:\'JetBrains Mono\',monospace;font-size:11px">Stage encerrado — todos definidos.</span>'; return; }
+  const st = {}; teams.forEach((t) => st[t.id] = { w: 0, l: 0 });
+  for (const m of lockedMatches) { const loser = m.winner === m.a ? m.b : m.a; st[m.winner].w++; st[loser].l++; }
+  let rec = '';
   $('live').innerHTML = pairs.map(([a, b]) => {
     const key = E.pairKey(a, b);
     const sel = roundPicks[key];
     const bo3 = isDecisive(a, b);
-    return `<div class="match">
+    const r = `${st[a].w}:${st[a].l}`;                       // grupo = record (ambos do par têm o mesmo)
+    const head = r !== rec ? (rec = r, `<div class="grec">${r}</div>`) : '';
+    return head + `<div class="match">
       <button class="pick ${sel === a ? 'sel' : ''}" data-k="${key}" data-w="${a}">${icon(nameOf(a), 14)}<span>${nameOf(a)}</span></button>
       <div class="vs${bo3 ? ' bo3' : ''}">${bo3 ? 'MD3' : '×'}</div>
       <button class="pick ${sel === b ? 'sel' : ''}" data-k="${key}" data-w="${b}">${icon(nameOf(b), 14)}<span>${nameOf(b)}</span></button>

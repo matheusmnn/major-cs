@@ -56,6 +56,15 @@ test('seedGroup: ordena pela seed inicial crescente (1 = melhor)', () => {
   assert.deepEqual(seedGroup([7, 2, 11, 4], state), [2, 4, 7, 11]);
 });
 
+test('seedGroup: Buchholz desc desempata pela seed (caminho mais duro = melhor seed)', () => {
+  const state = mkState({
+    1: { seed: 1, wins: 2, opponents: [10] }, // adversário 0-2 => Buchholz -2
+    2: { seed: 2, wins: 2, opponents: [11] }, // adversário 1-1 => Buchholz 0 (melhor)
+    10: { seed: 10, losses: 2 }, 11: { seed: 11, wins: 1, losses: 1 },
+  });
+  assert.deepEqual(seedGroup([1, 2], state), [2, 1]);
+});
+
 test('pairGroup split (rodada 1): 16 por seed => 1x9..8x16', () => {
   const ids1to16 = Array.from({ length: 16 }, (_, i) => i + 1);
   const pairs = pairGroup(ids1to16, () => false, 'split');
