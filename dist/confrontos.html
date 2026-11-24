@@ -322,14 +322,38 @@
     return dfs() ? result : null;
   }
 
-  // Pareamento de um grupo. mode 'split' = rodada 1 (rank k x rank k+n/2, ex. 1x9).
-  // mode 'fold' (padrão) = rodadas seguintes, melhor x pior (1x8, 2x7, 3x6, 4x5).
-  // Evita revanche via backtracking; só permite revanche se nenhum pareamento sem ela existir.
-  function pairGroup(sorted, hasPlayed, mode) {
+  // Regra do Major (rodadas 2+): o seed mais alto disponível enfrenta o seed mais BAIXO disponível
+  // que não gere revanche (não a posição-espelho). Sem revanche vira o fold normal (1x8,2x7,3x6,4x5);
+  // com revanche diverge do espelho. Backtracking garante um pareamento completo sem revanche quando há.
+  function foldPairs(sorted, blocked) {
     const n = sorted.length;
-    const want = (mode === 'split')
-      ? (i) => (i < n / 2 ? i + n / 2 : i - n / 2)
-      : (i) => n - 1 - i;
+    const used = new Array(n).fill(false);
+    const result = [];
+    function dfs() {
+      const i = used.indexOf(false); // seed mais alto ainda sem par
+      if (i === -1) return true;
+      used[i] = true;
+      for (let j = n - 1; j > i; j--) { // tenta do seed mais baixo p/ o mais alto
+        if (used[j] || blocked(sorted[i], sorted[j])) continue;
+        used[j] = true;
+        result.push([sorted[i], sorted[j]]);
+        if (dfs()) return true;
+        used[j] = false;
+        result.pop();
+      }
+      used[i] = false;
+      return false;
+    }
+    return dfs() ? result : null;
+  }
+
+  // Pareamento de um grupo. mode 'split' = rodada 1 (rank k x rank k+n/2, ex. 1x9).
+  // mode 'fold' (padrão) = rodadas 2+, regra do Major (ver foldPairs).
+  // Evita revanche; só permite revanche se nenhum pareamento sem ela existir.
+  function pairGroup(sorted, hasPlayed, mode) {
+    if (mode !== 'split') return foldPairs(sorted, hasPlayed) || foldPairs(sorted, () => false);
+    const n = sorted.length;
+    const want = (i) => (i < n / 2 ? i + n / 2 : i - n / 2);
     return matchPairs(sorted, want, hasPlayed) || matchPairs(sorted, want, () => false);
   }
 

@@ -79,6 +79,13 @@ test('pairGroup fold: grupo de 4 => 1x4, 2x3', () => {
   assert.deepEqual(pairGroup([10, 20, 30, 40], () => false), [[10, 40], [20, 30]]);
 });
 
+test('pairGroup fold: revanche usa a regra do Major (mais alto x mais baixo disponível, não o espelho)', () => {
+  // 6 por seed; o par do topo 1x6 é revanche => 1 pega o próximo mais baixo (5),
+  // e o 2 (próximo mais alto) deve pegar o mais baixo disponível (6), não o espelho (4).
+  const hp = (a, b) => (a === 1 && b === 6) || (a === 6 && b === 1);
+  assert.deepEqual(pairGroup([1, 2, 3, 4, 5, 6], hp), [[1, 5], [2, 6], [3, 4]]);
+});
+
 test('pairGroup fold: evita revanche deslocando o par', () => {
   // fold pareia 10x40; se já jogaram, desloca p/ o vizinho mais próximo sem revanche
   const hp = (a, b) => (a === 10 && b === 40) || (a === 40 && b === 10);
@@ -158,6 +165,28 @@ test('nextRoundPairings: sem resultados => rodada 1 por seed (1x9..8x16)', () =>
 test('nextRoundPairings: após rodada 1 => grupos 1-0 e 0-1 em dobra (melhor x pior)', () => {
   const r1 = [1, 2, 3, 4, 5, 6, 7, 8].map((w) => ({ a: w, b: w + 8, winner: w }));
   assert.deepEqual(nextRoundPairings(teams16, r1), [[1, 8], [2, 7], [3, 6], [4, 5], [9, 16], [10, 15], [11, 14], [12, 13]]);
+});
+
+test('nextRoundPairings: rodada 3 real do Major Singapore 2026 (Buchholz + revanche Wildcard×FaZe)', () => {
+  // seeds reais (1..16): NiP, PARIVISION, Heroic, FaZe, Liquid, EternalFire, 100T, 9z,
+  //                      M80, DEND, Imperial, Wildcard, BC, FlyQuest, CW, LVG
+  const nm = ['NiP', 'PARIVISION', 'Heroic', 'FaZe', 'Liquid', 'EternalFire', '100T', '9z',
+    'M80', 'DEND', 'Imperial', 'Wildcard', 'BC', 'FlyQuest', 'CW', 'LVG'];
+  const id = (n) => nm.indexOf(n) + 1;
+  const w = (a, b) => ({ a: id(a), b: id(b), winner: id(a) });
+  const results = [
+    w('NiP', 'M80'), w('PARIVISION', 'DEND'), w('Imperial', 'Heroic'), w('Wildcard', 'FaZe'),
+    w('Liquid', 'BC'), w('FlyQuest', 'EternalFire'), w('100T', 'CW'), w('LVG', '9z'),
+    w('NiP', 'LVG'), w('FlyQuest', 'PARIVISION'), w('Liquid', 'Wildcard'), w('Imperial', '100T'),
+    w('Heroic', 'CW'), w('FaZe', 'BC'), w('EternalFire', 'DEND'), w('M80', '9z'),
+  ];
+  const pr = nextRoundPairings(nm.map((_, i) => ({ id: i + 1, seed: i + 1, strength: 0 })), results)
+    .map(([a, b]) => `${nm[a - 1]}x${nm[b - 1]}`);
+  assert.deepEqual(pr, [
+    'NiPxLiquid', 'ImperialxFlyQuest',                                 // 2-0
+    'WildcardxLVG', 'PARIVISIONxFaZe', 'HeroicxM80', 'EternalFirex100T', // 1-1
+    'BCxCW', '9zxDEND',                                                // 0-2
+  ]);
 });
 
 test('nextRoundPairings: stage encerrado => []', () => {
