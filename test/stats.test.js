@@ -4,9 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+// 16 times do Stage 2 (por seed). Os 8 que vieram do Stage 1 têm stats; os 8 seeds diretos ainda não.
 const APP_TEAMS = [
-  'Ninjas in Pyjamas', 'PARIVISION', 'Heroic', 'FaZe', 'Team Liquid', 'Eternal Fire',
-  '100 Thieves', '9z', 'M80', 'DENDELE', 'Imperial', 'Wildcard', 'BC.Game', 'FlyQuest', 'CW', 'LVG',
+  'FUT', 'Nemiga', 'G2', '1win', 'NAVI', 'Astralis', 'The MongolZ', 'MIBR',
+  'FlyQuest', 'Ninjas in Pyjamas', 'Team Liquid', 'Eternal Fire', 'PARIVISION', 'Imperial', 'LVG', '100 Thieves',
 ].map(norm);
 
 const stats = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'stats.json'), 'utf8'));
